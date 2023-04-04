@@ -7,7 +7,7 @@ This is an add-on to the [`dino`](https://github.com/austinbv/dino) gem. It adds
 **Note:** This is not for the Raspberry Pi Pico (W) / RPP2040. That microcontroller is covered by the main gem.
 
 ## Installation
-**Note:** This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available on rubygems.org. Before installing `dino-piboard`, make sure to install the latest dino version (future 0.13.0) from the master branch source.
+**Note:** This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available on rubygems.org. Before installing `dino-piboard`, make sure to install the latest `dino` version (future 0.13.0) from the master branch.
 
 Install dino from source:
 ```shell
