@@ -1,6 +1,8 @@
 # dino-piboard 0.13.0
 
-This is an add-on to the [`dino`](https://github.com/austinbv/dino) gem. It adds support for the GPIO interface on Raspberry Pi single board computers. Unlike the main `dino` gem, which connects a computer running Ruby to an external microcontroller, this requires only a Pi. `Dino::PiBoard` gives access ot the Pi's own GPIO, and is a drop-in replacement for `Dino::Board`, which would represent an external  microcontroller.
+This is an add-on to the [`dino`](https://github.com/austinbv/dino) gem. It adds support for the GPIO interface on Raspberry Pi single board computers. Unlike the main `dino` gem, which connects a computer running Ruby to an external microcontroller, this requires only a Pi.
+
+`Dino::PiBoard` gives access to the Pi's own GPIO, and is a drop-in replacement for `Dino::Board`, which would represent an external microcontroller.
 
 **Note:** This is not for the Raspberry Pi Pico (W) / RPP2040. That microcontroller is covered by the main gem.
 
