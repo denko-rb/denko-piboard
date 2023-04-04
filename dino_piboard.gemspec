@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.authors     = ["vickash"]
   s.email       = 'vickashmahabir@gmail.com'
-  s.files       =  Dir['**/*']
+  s.files       =  Dir['**/*'].reject { |f| f.match /.gem\z/}
   s.homepage    = 'https://github.com/dino-rb/dino-piboard'
   s.metadata    = { "source_code_uri" => "https://github.com/dino-rb/dino-piboard" }
 
