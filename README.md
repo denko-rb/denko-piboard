@@ -1,2 +1,88 @@
-# dino-pi
-Dino::Board::Pi class for using Raspberry Pi GPIO with the dino gem
+# dino-piboard 0.13.0
+
+This is an addition to the [`dino`](https://github.com/austinbv/dino) gem. It provides support for the GPIO interface on Raspberry Pi single board computers. Unlike the main `dino` gem which connects a computer running Ruby to an external microcontroller, this runs on the Pi and let's it use its own GPIO as a `Dino::PiBoard` instance, in place of a `Dino::Board` that would represent an external controller.
+
+Note: this is not for the Raspberry Pi Pico (W) / RPP2040. That chip is covered by the main gem.
+
+## Installation
+Install the pigpo C library:
+```shell
+sudo apt-get install pigpio
+```
+
+**Note:** This gem WILL NOT work with the version of `dino` (0.11.3) currently available on rubygems.org. Before installing `dino-piboard`, please pull the latest [master](https://github.com/austinbv/dino) branch (future 0.13.0), `gem build` and install that. Both are still in early development and things may break.
+
+Install this gem:
+```shell
+sudo gem install dino-piboard
+```
+
+## Example
+Create a script `led_button.rb`:
+```ruby
+require 'dino/piboard'
+
+# Create a board instance for the Raspberry Pi.
+board = Dino::PiBoard.new
+
+# LED connected to GPIO4.
+led = Dino::LED.new(board: board, pin: 4)
+
+# Momentary button connected to GPIO17, using RasPi's internal pullup.
+button = Dino::DigitalIO::Button.new(board: board, pin: 17, pullup: true)
+
+# Led on when button is down (0)
+button.down do
+  puts "Button down"
+  led.on
+end
+
+# Led is off when button is up (1)
+button.up do
+  puts "Button up"
+  led.off
+end
+
+# Sleep main thread. Ctrl+C to quit.
+sleep
+```
+
+Run the script as root (pigpio can only be used as root):
+```shell
+sudo ruby led_button.rb
+```
+
+See [`examples`](https://github.com/austinbv/dino/tree/master/examples) in the main gem for more. Remove any `Dino::Board::Connection` and `Dino::Board` objects that the script sets up, and do `board = Dino::PiBoard.new` instead. Not all features are implemented yet though, nor can be implemented. See [Feautres](#features) below.
+
+## How It Works
+
+This gem uses the [`pigpio_ffi`](https://github.com/dino-rb/pigpio_ffi) gem, which in turn uses [`ffi`](https://github.com/ffi/ffi) to map the functions of the [`pigpio`](https://github.com/joan2937/pigpio) C library. `pigpio` provides low-level access to the Raspberry Pi's GPIO interface.
+
+Building from there, `Dino::PiBoard` plugs in as a (mostly) seamless replacement for `Dino::Board`. This allows `dino` features and component classes to be used directly on a Raspberry Pi, without needing an external microcontroller.
+
+## Features
+
+### Already Implemented
+  - Internal Pull Down/Up
+  - Digital Out
+  - Digital In
+  - PWM Out
+
+### To Be Implemented
+  - Tone Out
+  - Servo
+  - I2C
+  - SPI
+  - OneWire
+  - Infrared Out
+
+### Won't Be Implemented
+  - UART. It would wrap a [`rubyserial`](https://github.com/hybridgroup/rubyserial) instance. Use that directly instead.
+
+### Might Be Different
+  - Variable Digital Listen Timing (pigpio doesn't have a real way to do this, but glitch filter might be even better?)
+
+### Incompatible
+  - Handshake (no need, since running on the same board)
+  - EEPROM (can't mess with that. Use the filesystem instead)
+  - Analog IO (No analog pins on Raspberry Pi. Use an ADC or DAC over I2C or SPI)
