@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.version     = Dino::PiBoard::VERSION
   s.licenses    = ['MIT']
   s.summary     = "Use a Raspberry Pi's built-in GPIO as a board with the dino gem"
-  s.description = "Dino::PiBoard plugs in as a (mostly) seamless replacement for Dino::Board. This allows dino features and component classes to be used directly on a Raspberry Pi, without needing an external microcontroller."
+  s.description = "Dino::PiBoard plugs in as a (mostly) seamless replacement for Dino::Board. This allows dino features and component classes to be used directly on a Raspberry Pi, without an external microcontroller."
 
   s.authors     = ["vickash"]
   s.email       = 'vickashmahabir@gmail.com'
