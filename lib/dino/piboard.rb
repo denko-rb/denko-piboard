@@ -1,23 +1,28 @@
-require 'pigpio_ffi'
 require 'dino'
+require 'pigpio'
+include Pigpio::Constant
 
 module Dino
   class PiBoard
-    attr_reader :components, :high, :low
+    attr_reader :components, :high, :low, :pwm_high
 
     def initialize
       @components = []
-
-      # Sample every 10us, using PCM peripheral. Keeps CPU usage down.
-      PiGPIO.gpioCfgClock(10, 1, 0)    
-      PiGPIO.gpioInitialise
-    
+      @pin_callbacks = []
+      @pin_pwms = []
+      
       @low  = 0
       @high = 1
+      @pwm_high = 255
+
+      @board = Pigpio.new
+      unless @board.connect
+        exit -1
+      end
     end
 
     def finish_write
-      PiGPIO.gpioTerminate
+      @board.stop
     end
 
     def update(pin, message, time)
@@ -35,56 +40,74 @@ module Dino
     end
 
     def remove_component(component)
-      # component.stop if component.methods.include? :stop
+      component.stop if component.methods.include? :stop
       @components.delete(component)
     end
 
     # CMD = 0
     def set_pin_mode(pin, mode=:input)
+      pwm_clear(pin)
+      gpio = @board.gpio(pin)
+
       # Output
       if mode.to_s.match /output/
-        PiGPIO.gpioSetMode(pin, 1)
+        gpio.mode = PI_OUTPUT
 
       # Input
-      else  
-        PiGPIO.gpioSetMode(pin, 0)
-        # Only respond if level has been stable for 90us.
-        PiGPIO.gpioGlitchFilter(pin, 90)      
+      else
+        gpio.mode = PI_INPUT
+        # Only trigger state change if level has been stable for 90us.
+        gpio.glitch_filter(90)
 
         # Pull down/up/none
         if mode.to_s.match /pulldown/
-          PiGPIO.gpioSetPullUpDown(pin, 1)
+          gpio.pud = PI_PUD_DOWN
         elsif mode.to_s.match /pullup/
-          PiGPIO.gpioSetPullUpDown(pin, 2)
+          gpio.pud = PI_PUD_UP
         else
-          PiGPIO.gpioSetPullUpDown(pin, 0)
+          gpio.pud = PI_PUD_OFF
         end
       end
     end
 
     # CMD = 1
     def digital_write(pin, value)
-      PiGPIO.gpioWrite(pin, value)
+      pwm_clear(pin)
+      @board.gpio(pin).write(value)
     end
     
     # CMD = 2
     def digital_read(pin)
-      update(pin, PiGPIO.gpioRead(pin))
+      if @pin_pwms[pin]
+        @pin_pwms[pin].dutycycle
+      else
+        @board.gpio(pin).read
+      end
+    end
+
+    def pwm_clear(pin)
+      @pin_pwms[pin] = nil
     end
 
     # CMD = 3
     def pwm_write(pin, value)
-      PiGPIO.gpioPWM(pin, value)
+      @pin_pwms[pin] = @board.gpio(pin).pwm unless @pin_pwms[pin]
+      @pin_pwms[pin].dutycycle = value
     end
 
     # CMD = 6
-    def set_listener(set_pin, state=:off, options={})
-      if state == :on
-        PiGPIO.gpioSetAlertFunc(set_pin) do |pin, message, time|
-          update(pin, message, time)
+    def set_listener(pin, state=:off, options={})
+      # Listener on
+      if state == :on && !@pin_callbacks[pin]
+        callback = @board.gpio(pin).callback(EITHER_EDGE) do |tick, level, pin_cb|
+          update(pin_cb, level, tick)
         end
+        @pin_callbacks[pin] = callback
+
+      # Listener off
       else
-        PiGPIO._gpioSetAlertFunc(pin, nil)
+        @pin_callbacks[pin].cancel if @pin_callbacks[pin]
+        @pin_callbacks[pin] = nil
       end
     end
 

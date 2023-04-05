@@ -29,6 +29,13 @@ sudo gem install dino-piboard
 ```
 
 ## Example
+GPIO access on the Raspberry Pi requires root privelges. The pigpio library includes `pigpiod`, which runs in the background. Our script uses the GPIO through it, allowing them to run as a regular user. Start it up first:
+```shell
+sudo pigpiod -s 10
+```
+Note: `-s 10` here tells `pigpiod` to sample pins only every 10 microseconds, which reduces CPU usage. Default is 5 microseconds.
+
+
 Create a script, `led_button.rb`:
 ```ruby
 require 'dino/piboard'
@@ -58,18 +65,16 @@ end
 sleep
 ```
 
-Run the script as root (pigpio can only be used as root):
+Run the script:
 ```shell
-sudo ruby led_button.rb
+ruby led_button.rb
 ```
 
 See [`examples`](https://github.com/austinbv/dino/tree/master/examples) in the main gem for more. Remove any `Dino::Board::Connection` and `Dino::Board` objects that the script sets up, and do `board = Dino::PiBoard.new` instead. Not all features are implemented yet though, nor can be implemented. See [Feautres](#features) below.
 
 ## How It Works
 
-This gem uses the [`pigpio_ffi`](https://github.com/dino-rb/pigpio_ffi) gem, which in turn uses [`ffi`](https://github.com/ffi/ffi) to map the functions of the [`pigpio`](https://github.com/joan2937/pigpio) C library. `pigpio` provides low-level access to the Raspberry Pi's GPIO interface.
-
-Building on that, `Dino::PiBoard` plugs in as a (mostly) seamless replacement for `Dino::Board`. This allows `dino` features and component classes to be used directly on a Raspberry Pi, without an external microcontroller.
+This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem, which provides a Ruby interface to the [`pigpio`](https://github.com/joan2937/pigpio) C library, which provides low-level access to the Raspberry Pi's GPIO interface. Building on this, `Dino::PiBoard` plugs in as a replacement for `Dino::Board`. This allows `dino` features and component classes to be used directly on a Raspberry Pi, without an external microcontroller.
 
 ## Features
 
@@ -77,7 +82,7 @@ Building on that, `Dino::PiBoard` plugs in as a (mostly) seamless replacement fo
   - Internal Pull Down/Up
   - Digital Out
   - Digital In
-  - PWM Out
+  - PWM Out (analog audio can't be used when PWM is)
 
 ### To Be Implemented
   - Tone Out

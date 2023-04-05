@@ -13,6 +13,6 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/dino-rb/dino-piboard'
   s.metadata    = { "source_code_uri" => "https://github.com/dino-rb/dino-piboard" }
 
-  s.add_dependency 'pigpio_ffi'
+  s.add_dependency 'pigpio'
   s.add_dependency 'dino'
 end
