@@ -85,10 +85,6 @@ module Dino
       end
     end
 
-    def pwm_clear(pin)
-      @pin_pwms[pin] = nil
-    end
-
     # CMD = 3
     def pwm_write(pin, value)
       @pin_pwms[pin] = @board.gpio(pin).pwm unless @pin_pwms[pin]
@@ -117,6 +113,30 @@ module Dino
 
     def stop_listener(pin)
       set_listener(pin, :off)
+    end
+
+    def tone(pin, frequency, duration=nil)
+      pin_mask = 1 << pin
+      half_wavelength = (500000.0 / frequency).round
+      wave = @board.wave
+      wave.tx_stop.clear
+      wave.add_new
+      wave.add_generic [
+        wave.pulse(pin_mask, 0x00, half_wavelength),
+        wave.pulse(0x00, pin_mask, half_wavelength)                  
+      ]
+      wave_id = wave.create
+      wave.send_repeat(wave_id)
+    end
+
+    def no_tone(pin)
+      @board.wave.tx_stop.clear
+    end
+
+    private
+
+    def pwm_clear(pin)
+      @pin_pwms[pin] = nil
     end
   end
 end

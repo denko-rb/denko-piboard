@@ -1,21 +1,34 @@
 # dino-piboard 0.13.0
 
-This is an add-on to the [`dino`](https://github.com/austinbv/dino) gem. It adds support for the GPIO interface on Raspberry Pi single board computers. Unlike the main `dino` gem, which connects a computer running Ruby to an external microcontroller, this requires only a Pi.
+This is an add-on to the [`dino`](https://github.com/austinbv/dino) gem. It adds support for the GPIO interface on Raspberry Pi single board computers. Unlike the main gem, which connects Ruby on a computer to an external microcontroller, this requires only a Pi.
 
 `Dino::PiBoard` gives access to the Pi's own GPIO, and is a drop-in replacement for `Dino::Board`, which would represent an external microcontroller.
 
 **Note:** This is not for the Raspberry Pi Pico (W) / RPP2040. That microcontroller is covered by the main gem.
 
 ## Installation
-**Note:** This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available on rubygems.org. Before installing `dino-piboard`, make sure to install the latest `dino` version (future 0.13.0) from the master branch.
+**Note:** This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available from RubyGems. Before installing `dino-piboard`, make sure to install the latest `dino` version (future 0.13.0) from the master branch.
+
+**Note:** Add `sudo` before all `gem install` and `gem uninstall` if using the system Ruby on the Raspberry Pi. Rubies installed with `rbenv` won't require it.
 
 Install dino from source:
 ```shell
-sudo gem uninstall dino
+gem uninstall dino
 git clone https://github.com/austinbv/dino.git
 cd dino
 gem build
-sudo gem install dino-0.13.0.gem
+gem install dino-0.13.0.gem
+```
+
+**Note:** There's a bug in the release version of the `pigpio` gem which prevents Dino's tone (square wave buzzer) from working. Install from this fork if you need that fix, until a new version is released. Skip this step if you don't need it.
+
+Install pigpio from source:
+```shell
+gem uninstall pigpio
+git clone https://github.com/vickash/ruby-extension-pigpio.git
+cd ruby-extension-pigpio
+gem build
+gem install pigpio-0.1.11.gem
 ```
 
 Install the pigpo C library:
@@ -25,15 +38,15 @@ sudo apt-get install pigpio
 
 Install this gem:
 ```shell
-sudo gem install dino-piboard
+gem install dino-piboard
 ```
 
 ## Example
-GPIO access on the Raspberry Pi requires root privelges. The pigpio library includes `pigpiod`, which runs in the background. Our script uses the GPIO through it, allowing them to run as a regular user. Start it up first:
+Raspberry Pi requires GPIO access requires root privelges. The pigpio library includes `pigpiod`, which runs in the background. We can access the GPIO through it, allowing our scripts to run as a regular user. Start `pigpiod` first:
 ```shell
 sudo pigpiod -s 10
 ```
-Note: `-s 10` here tells `pigpiod` to sample pins only every 10 microseconds, which reduces CPU usage. Default is 5 microseconds.
+**Note:** `-s 10` tells `pigpiod` to sample pins every 10 microseconds, reducing CPU usage. Default is 5.
 
 
 Create a script, `led_button.rb`:
@@ -83,14 +96,15 @@ This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) g
   - Digital Out
   - Digital In
   - PWM Out (analog audio can't be used when PWM is)
+  - Tone Out (Not working with release version of `pigpio` gem. See [Installation](#installation) above.)
 
 ### To Be Implemented
-  - Tone Out
   - Servo
   - I2C
   - SPI
   - OneWire
   - Infrared Out
+  - WS2812
 
 ### Won't Be Implemented
   - UART. It would wrap a [`rubyserial`](https://github.com/hybridgroup/rubyserial) instance. Use that directly instead.
