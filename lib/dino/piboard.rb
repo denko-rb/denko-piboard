@@ -115,11 +115,13 @@ module Dino
       set_listener(pin, :off)
     end
 
+    # CMD = 17
     def tone(pin, frequency, duration=nil)
       pin_mask = 1 << pin
       half_wavelength = (500000.0 / frequency).round
       wave = @board.wave
-      wave.tx_stop.clear
+      wave.tx_stop
+      wave.clear
       wave.add_new
       wave.add_generic [
         wave.pulse(pin_mask, 0x00, half_wavelength),
@@ -129,8 +131,11 @@ module Dino
       wave.send_repeat(wave_id)
     end
 
+    # CMD = 18
     def no_tone(pin)
-      @board.wave.tx_stop.clear
+      wave = @board.wave
+      wave.tx_stop
+      wave.clear
     end
 
     private
