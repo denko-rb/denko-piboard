@@ -15,14 +15,13 @@ module Dino
       @high = 1
       @pwm_high = 255
 
-      @board = Pigpio.new
-      unless @board.connect
-        exit -1
-      end
+      # Use the interface class directly. Store the handle in @pi.
+      @pi = Pigpio::IF.pigpio_start
+      exit(-1) if @pi < 0
     end
 
     def finish_write
-      @board.stop
+      @pi = Pigpio::IF.pigpio_stop(@pi)
     end
 
     def update(pin, message, time)
@@ -47,7 +46,7 @@ module Dino
     # CMD = 0
     def set_pin_mode(pin, mode=:input)
       pwm_clear(pin)
-      gpio = @board.gpio(pin)
+      gpio = get_gpio(pin)
 
       # Output
       if mode.to_s.match /output/
@@ -73,7 +72,7 @@ module Dino
     # CMD = 1
     def digital_write(pin, value)
       pwm_clear(pin)
-      @board.gpio(pin).write(value)
+      get_gpio(pin).write(value)
     end
     
     # CMD = 2
@@ -81,13 +80,13 @@ module Dino
       if @pin_pwms[pin]
         @pin_pwms[pin].dutycycle
       else
-        @board.gpio(pin).read
+        get_gpio(pin).read
       end
     end
 
     # CMD = 3
     def pwm_write(pin, value)
-      @pin_pwms[pin] = @board.gpio(pin).pwm unless @pin_pwms[pin]
+      @pin_pwms[pin] = get_gpio(pin).pwm unless @pin_pwms[pin]
       @pin_pwms[pin].dutycycle = value
     end
 
@@ -95,7 +94,7 @@ module Dino
     def set_listener(pin, state=:off, options={})
       # Listener on
       if state == :on && !@pin_callbacks[pin]
-        callback = @board.gpio(pin).callback(EITHER_EDGE) do |tick, level, pin_cb|
+        callback = get_gpio(pin).callback(EITHER_EDGE) do |tick, level, pin_cb|
           update(pin_cb, level, tick)
         end
         @pin_callbacks[pin] = callback
@@ -119,7 +118,7 @@ module Dino
     def tone(pin, frequency, duration=nil)
       pin_mask = 1 << pin
       half_wavelength = (500000.0 / frequency).round
-      wave = @board.wave
+      new_wave
       wave.tx_stop
       wave.clear
       wave.add_new
@@ -128,17 +127,30 @@ module Dino
         wave.pulse(0x00, pin_mask, half_wavelength)                  
       ]
       wave_id = wave.create
-      wave.send_repeat(wave_id)
+      
+      # Temporary workaround while Wave#send_repeat gets fixed.
+      Pigpio::IF.wave_send_repeat(@pi, wave_id)
+      # wave.send_repeat(wave_id)
     end
 
     # CMD = 18
     def no_tone(pin)
-      wave = @board.wave
       wave.tx_stop
       wave.clear
+      self.wave = nil
     end
 
     private
+
+    attr_accessor :wave
+
+    def new_wave
+      @wave = Pigpio::Wave.new(@pi)
+    end
+
+    def get_gpio(pin)
+      Pigpio::UserGPIO.new(@pi, pin)
+    end
 
     def pwm_clear(pin)
       @pin_pwms[pin] = nil

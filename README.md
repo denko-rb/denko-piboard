@@ -20,17 +20,6 @@ gem build
 gem install dino-0.13.0.gem
 ```
 
-**Note:** There's a bug in the release version of the `pigpio` gem which prevents Dino's tone (square wave buzzer) from working. Install from this fork if you need that fix, until a new version is released. Skip this step if you don't need it.
-
-Install pigpio from source:
-```shell
-gem uninstall pigpio
-git clone https://github.com/vickash/ruby-extension-pigpio.git
-cd ruby-extension-pigpio
-gem build
-gem install pigpio-0.1.11.gem
-```
-
 Install the pigpo C library:
 ```shell
 sudo apt-get install pigpio
@@ -96,7 +85,7 @@ This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) g
   - Digital Out
   - Digital In
   - PWM Out (analog audio can't be used when PWM is)
-  - Tone Out (Not working with release version of `pigpio` gem. See [Installation](#installation) above.)
+  - Tone Out
 
 ### To Be Implemented
   - Servo
