@@ -114,12 +114,14 @@ sudo pigpiod -s 10
   - Internal Pull Down/Up
   - Digital Out
   - Digital In
-  - PWM Out - Analog audio can't be used when PWM is in use.
-  - Tone Out
+  - **PWM Based:** (One at a time per pin. Use on any pin disables Pi analog audio out)
+    - PWM Out
+    - Servo
+  - **Wave Based:** (One at a time per board)
+    - Tone Out
   - I2C - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
 
 ### To Be Implemented
-  - Servo
   - SPI
   - OneWire
   - Infrared Out

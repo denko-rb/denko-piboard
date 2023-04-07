@@ -86,7 +86,13 @@ module Dino
 
     # CMD = 3
     def pwm_write(pin, value)
-      @pin_pwms[pin] = get_gpio(pin).pwm unless @pin_pwms[pin]
+      # Disable servo if necessary.
+      pwm_clear(pin) if @pin_pwms[pin] == :servo
+
+      unless @pin_pwms[pin]
+        @pin_pwms[pin] = get_gpio(pin).pwm
+        @pin_pwms[pin].frequency = 1000
+      end
       @pin_pwms[pin].dutycycle = value
     end
 
@@ -112,6 +118,21 @@ module Dino
 
     def stop_listener(pin)
       set_listener(pin, :off)
+    end
+
+    # CMD = 10
+    def servo_toggle(pin, value=:off, options={})
+      if value == :off
+        pwm_clear(pin)
+        digital_write(pin, 0)
+      else
+        @pin_pwms[pin] = :servo
+      end
+    end
+    
+    # CMD = 11
+    def servo_write(pin, value=0)
+      Pigpio::IF.set_servo_pulsewidth(pi_handle, pin, value)
     end
 
     # CMD = 17
