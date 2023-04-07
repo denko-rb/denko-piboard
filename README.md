@@ -82,7 +82,7 @@ gem install pigpio
 git clone https://github.com/vickash/ruby-extension-pigpio.git
 cd ruby-extension-pigpio
 gem build
-gem install ruby-extension-0.1.11.gem
+gem install ruby-extension-pigpio-0.1.11.gem
 ```
 
 Finally, install this gem:
@@ -90,11 +90,11 @@ Finally, install this gem:
 gem install dino-piboard
 ```
 
-**Note:** Add `sudo` before `gem install` and `gem uninstall` if using the system Ruby preinstalled on the Raspberry Pi. Rubies installed with [`rbenv`](https://github.com/rbenv/rbenv) shouldn't require it.
+**Note:** Add `sudo` before `gem install` and `gem uninstall` if using the system Ruby preinstalled on the Pi. Rubies installed with [`rbenv`](https://github.com/rbenv/rbenv) shouldn't require it.
 
 ## Pi Setup
 
-Some of the Pi's peripherals are disabled by default, namely I2C and SPI. Enable them using the built in utility:
+I2C, SPI and the hardware UART are disabled on the Pi by default. Enable them with the built in utility:
 ```shell
 sudo raspi-config
 ```
