@@ -15,13 +15,13 @@ module Dino
       @high = 1
       @pwm_high = 255
 
-      # Use the interface class directly. Store the handle in @pi.
-      @pi = Pigpio::IF.pigpio_start
-      exit(-1) if @pi < 0
+      # Use the interface class directly.
+      @pi_handle = Pigpio::IF.pigpio_start
+      exit(-1) if @pi_handle < 0
     end
 
     def finish_write
-      @pi = Pigpio::IF.pigpio_stop(@pi)
+      Pigpio::IF.pigpio_stop(@pi_handle)
     end
 
     def update(pin, message, time)
@@ -129,7 +129,7 @@ module Dino
       wave_id = wave.create
       
       # Temporary workaround while Wave#send_repeat gets fixed.
-      Pigpio::IF.wave_send_repeat(@pi, wave_id)
+      Pigpio::IF.wave_send_repeat(@pi_handle, wave_id)
       # wave.send_repeat(wave_id)
     end
 
@@ -140,11 +140,19 @@ module Dino
 
     private
 
+    def get_gpio(pin)
+      Pigpio::UserGPIO.new(@pi_handle, pin)
+    end
+    
+    def pwm_clear(pin)
+      @pin_pwms[pin] = nil
+    end
+
     attr_accessor :wave
 
     def new_wave
       stop_wave
-      @wave = Pigpio::Wave.new(@pi)
+      @wave = Pigpio::Wave.new(@pi_handle)
     end
 
     def stop_wave
@@ -152,14 +160,6 @@ module Dino
       wave.tx_stop
       wave.clear
       self.wave = nil
-    end
-
-    def get_gpio(pin)
-      Pigpio::UserGPIO.new(@pi, pin)
-    end
-
-    def pwm_clear(pin)
-      @pin_pwms[pin] = nil
     end
   end
 end
