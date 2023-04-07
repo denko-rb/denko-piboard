@@ -135,9 +135,7 @@ module Dino
 
     # CMD = 18
     def no_tone(pin)
-      wave.tx_stop
-      wave.clear
-      self.wave = nil
+      stop_wave
     end
 
     private
@@ -145,7 +143,15 @@ module Dino
     attr_accessor :wave
 
     def new_wave
+      stop_wave
       @wave = Pigpio::Wave.new(@pi)
+    end
+
+    def stop_wave
+      return unless wave
+      wave.tx_stop
+      wave.clear
+      self.wave = nil
     end
 
     def get_gpio(pin)
