@@ -72,7 +72,20 @@ Install pigpo C library:
 sudo apt-get install pigpio
 ```
 
-Install this gem:
+Install pigpio gem:
+```shell
+gem install pigpio
+```
+
+**Note:** This might not work on Ruby 3+. If it doesn't, install from [this fork](https://github.com/vickash/ruby-extension-pigpio) until fixes are merged:
+```shell
+git clone https://github.com/vickash/ruby-extension-pigpio.git
+cd ruby-extension-pigpio
+gem build
+gem install ruby-extension-0.1.11.gem
+```
+
+Finally, install this gem:
 ```shell
 gem install dino-piboard
 ```
@@ -85,7 +98,7 @@ Some of the Pi's peripherals are disabled by default, namely I2C and SPI. Enable
 ```shell
 sudo raspi-config
 ```
-Select "Interfacing Options" from the menu and enable peripherals as needed. More info on each in the [Features](#features) section.
+Select "Interfacing Options" from the menu and enable as needed. More info in the [Features](#features) section.
 
 #### pigpiod
 

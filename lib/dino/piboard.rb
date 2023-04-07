@@ -245,7 +245,7 @@ module Dino
       return unless wave
       wave.tx_stop
       wave.clear
-      self.wave = nil
+      @wave = nil
     end
 
     def open_i2c(bus_index, address)
