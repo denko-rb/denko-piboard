@@ -1,48 +1,14 @@
 # dino-piboard 0.13.0
 
-This is an add-on to the [`dino`](https://github.com/austinbv/dino) gem. It adds support for the GPIO interface on Raspberry Pi single board computers. Unlike the main gem, which connects Ruby on a computer to an external microcontroller, this requires only a Pi.
+### Raspberry Pi GPIO and Peripherals in Ruby
 
-`Dino::PiBoard` gives access to the Pi's own GPIO, and is a drop-in replacement for `Dino::Board`, which would represent an external microcontroller.
+This gem adds support for the Raspberry Pi's GPIO interface and perhipherals to [`dino`](https://github.com/austinbv/dino). Unlike the main gem, which connects a computer running Ruby to an external microcontroller, this lets you to connect hardware directly to the Pi, skipping the microcontroller in between.
 
-**Note:** This is not for the Raspberry Pi Pico (W) / RPP2040. That microcontroller is covered by the main gem.
+Using the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem, and [`pigpio`](https://github.com/joan2937/pigpio) C library, `Dino::PiBoard` is a drop-in replacement for `Dino::Board`, which would represent the micrcontroller. Everything maps to the Pi's built-in GPIO instead.
 
-## Installation
-**Note:** Add `sudo` before all `gem install` and `gem uninstall` if using the system Ruby on the Raspberry Pi. Rubies installed with `rbenv` won't require it.
-
-**Note:** This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available from RubyGems. Before installing `dino-piboard`, make sure to install the latest `dino` version (future 0.13.0) from the master branch.
-
-Install dino from source:
-```shell
-gem uninstall dino
-git clone https://github.com/austinbv/dino.git
-cd dino
-gem build
-gem install dino-0.13.0.gem
-```
-
-Install the pigpo C library:
-```shell
-sudo apt-get install pigpio
-```
-
-Install this gem:
-```shell
-gem install dino-piboard
-```
-
-Enable I2C, SPI and Serial UART? hardware before use:
-```shell
-sudo raspi-config
-```
-Select "Interfacing Options" from the menu and enable peripherals as needed. More info on each in the [Features](#features) section.
+**Note:** This is not for the Raspberry Pi Pico (W) / RP2040. That microcontroller is covered by the main gem.
 
 ## Example
-Raspberry Pi requires GPIO access requires root privelges. The pigpio library includes `pigpiod`, which runs in the background. We can access the GPIO through it, allowing our scripts to run as a regular user. Start `pigpiod` (needs to be done every reboot):
-```shell
-sudo pigpiod -s 10
-```
-**Note:** `-s 10` tells `pigpiod` to sample pins every 10 microseconds, reducing CPU usage. Default is 5.
-
 Create a script, `led_button.rb`:
 ```ruby
 require 'dino/piboard'
@@ -77,11 +43,57 @@ Run the script:
 ruby led_button.rb
 ```
 
-See [`examples`](https://github.com/austinbv/dino/tree/master/examples) in the main gem for more. Remove any `Dino::Board::Connection` and `Dino::Board` objects that the script sets up, and do `board = Dino::PiBoard.new` instead. Not all features are implemented yet though, nor can be implemented. See [Feautres](#features) below.
+Check out the [`examples`](https://github.com/austinbv/dino/tree/master/examples) folder in the main gem for more. To adapt those examples:
+  - Find the line where the variable `board` is set. It should look something like `board = Dino::Board.new`.
+  - Remove all code up to, and including, that line. Replace it with:
+    ```ruby
+    require 'dino/piboard'
+    board = Dino::PiBoard.new
+    ```
+  - Update pins as necessary. Many of the GPIOs will be different, I2C bus will need the correct SDA pin (2 for all Pis), etc.
+  
+**Note:** Not all features are implemented yet, nor can be implemented. See [Feautres](#features) below.
 
-## How It Works
+## Installation
 
-This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem, which provides a Ruby interface to the [`pigpio`](https://github.com/joan2937/pigpio) C library, which provides low-level access to the Raspberry Pi's GPIO interface. Building on this, `Dino::PiBoard` plugs in as a replacement for `Dino::Board`. This allows `dino` features and component classes to be used directly on a Raspberry Pi, without an external microcontroller.
+This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available from RubyGems. Before installing `dino-piboard`, make sure to install the latest `dino` (future 0.13.0) from the master branch.
+
+Install dino from source:
+```shell
+gem uninstall dino
+git clone https://github.com/austinbv/dino.git
+cd dino
+gem build
+gem install dino-0.13.0.gem
+```
+
+Install pigpo C library:
+```shell
+sudo apt-get install pigpio
+```
+
+Install this gem:
+```shell
+gem install dino-piboard
+```
+
+**Note:** Add `sudo` before `gem install` and `gem uninstall` if using the system Ruby preinstalled on the Raspberry Pi. Rubies installed with [`rbenv`](https://github.com/rbenv/rbenv) shouldn't require it.
+
+## Pi Setup
+
+Some of the Pi's peripherals are disabled by default, namely I2C and SPI. Enable them using the built in utility:
+```shell
+sudo raspi-config
+```
+Select "Interfacing Options" from the menu and enable peripherals as needed. More info on each in the [Features](#features) section.
+
+#### pigpiod
+
+The `pigpio` package includes `pigpiod`, which runs in the background as root, providing GPIO access. Ruby scripts won't work if it isn't running. It should only need to be started once per boot. You can script it to start automatically, or start it manually with:
+```shell
+sudo pigpiod -s 10
+```
+**Note:** `-s 10` tells `pigpiod` to tick every 10 microseconds (maximum), reducing CPU usage. Default is 5.
 
 ## Features
 
@@ -89,9 +101,9 @@ This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) g
   - Internal Pull Down/Up
   - Digital Out
   - Digital In
-  - PWM Out (Analog audio can't be used when PWM is in use.)
+  - PWM Out - Analog audio can't be used when PWM is in use.
   - Tone Out
-  - I2C (Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).)
+  - I2C - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
 
 ### To Be Implemented
   - Servo
@@ -99,9 +111,10 @@ This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) g
   - OneWire
   - Infrared Out
   - WS2812
+  - Bitbang UART
 
 ### Won't Be Implemented
-  - UART. It would wrap a [`rubyserial`](https://github.com/hybridgroup/rubyserial) instance. Use that directly instead.
+  - Hardware UART. It would wrap a [`rubyserial`](https://github.com/hybridgroup/rubyserial) instance. Use that directly instead.
 
 ### Might Be Different
   - Variable Digital Listen Timing (pigpio doesn't have a real way to do this, but glitch filter might be even better?)
