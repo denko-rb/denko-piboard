@@ -7,9 +7,9 @@ This is an add-on to the [`dino`](https://github.com/austinbv/dino) gem. It adds
 **Note:** This is not for the Raspberry Pi Pico (W) / RPP2040. That microcontroller is covered by the main gem.
 
 ## Installation
-**Note:** This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available from RubyGems. Before installing `dino-piboard`, make sure to install the latest `dino` version (future 0.13.0) from the master branch.
-
 **Note:** Add `sudo` before all `gem install` and `gem uninstall` if using the system Ruby on the Raspberry Pi. Rubies installed with `rbenv` won't require it.
+
+**Note:** This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available from RubyGems. Before installing `dino-piboard`, make sure to install the latest `dino` version (future 0.13.0) from the master branch.
 
 Install dino from source:
 ```shell
@@ -30,13 +30,18 @@ Install this gem:
 gem install dino-piboard
 ```
 
+Enable I2C, SPI and Serial UART? hardware before use:
+```shell
+sudo raspi-config
+```
+Select "Interfacing Options" from the menu and enable peripherals as needed. More info on each in the [Features](#features) section.
+
 ## Example
-Raspberry Pi requires GPIO access requires root privelges. The pigpio library includes `pigpiod`, which runs in the background. We can access the GPIO through it, allowing our scripts to run as a regular user. Start `pigpiod` first:
+Raspberry Pi requires GPIO access requires root privelges. The pigpio library includes `pigpiod`, which runs in the background. We can access the GPIO through it, allowing our scripts to run as a regular user. Start `pigpiod` (needs to be done every reboot):
 ```shell
 sudo pigpiod -s 10
 ```
 **Note:** `-s 10` tells `pigpiod` to sample pins every 10 microseconds, reducing CPU usage. Default is 5.
-
 
 Create a script, `led_button.rb`:
 ```ruby
@@ -84,12 +89,12 @@ This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) g
   - Internal Pull Down/Up
   - Digital Out
   - Digital In
-  - PWM Out (analog audio can't be used when PWM is)
+  - PWM Out (Analog audio can't be used when PWM is in use.)
   - Tone Out
+  - I2C (Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).)
 
 ### To Be Implemented
   - Servo
-  - I2C
   - SPI
   - OneWire
   - Infrared Out
