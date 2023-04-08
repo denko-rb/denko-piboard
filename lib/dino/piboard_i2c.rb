@@ -10,6 +10,7 @@ module Dino
         byte = Pigpio::IF.i2c_read_byte(pi_handle, i2c_handle)
         # Add to the string colon separated if byte was valid.
         found_string << "#{address}:" if byte >= 0
+        close_i2c
       end
 
       # Remove trailing colon.
@@ -77,6 +78,7 @@ module Dino
       # Read from the I2C1 interface.
       open_i2c(1, address)
       bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer, num_bytes)
+      close_i2c
 
       # Format the bytes like dino expects from a microcontroller.
       message = bytes.split("").map { |byte| byte.ord.to_s }.join(",")
