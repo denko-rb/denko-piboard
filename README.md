@@ -119,10 +119,18 @@ sudo pigpiod -s 10
     - Servo
   - **Wave Based:** (One at a time per board)
     - Tone Out
-  - I2C - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
+  - I2C
+    - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
+
+### Partially Implemented
+  - SPI
+    - Must enable with `raspi-config` before use. Insturctions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi).
+    - Only Uses SPI1 interface, not SPI0.
+    - SPI modes 1 and 3 may not work.
+    - No listeners yet.
 
 ### To Be Implemented
-  - SPI
+  - Bitbang Shift In / Shift Out / SPI
   - OneWire
   - Infrared Out
   - WS2812
