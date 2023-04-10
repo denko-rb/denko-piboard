@@ -114,11 +114,9 @@ sudo pigpiod -s 10
   - Internal Pull Down/Up
   - Digital Out
   - Digital In
-  - **PWM Based:** (One at a time per pin. Use on any pin disables Pi analog audio out)
-    - PWM Out
-    - Servo
-  - **Wave Based:** (One at a time per board)
-    - Tone Out
+  - PWM Out (use on any pin disables Pi's analog audio out, cancels Servo on same pin)
+  - Servo   (use on any pin disables Pi's analog audio out, cancels PWM Out on same pin)
+  - ToneOut (uses waves, one at a time per board, cancels any Infrared Out)
   - I2C
     - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
 
@@ -126,6 +124,7 @@ sudo pigpiod -s 10
   - SPI
     - Must enable with `raspi-config` before use. Insturctions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi).
     - Only Uses SPI1 interface, not SPI0.
+    - Does not bind CE pins according to GPIO pinout. Any pin can be used for chip enable.
     - SPI modes 1 and 3 may not work.
     - No listeners yet.
 
