@@ -6,11 +6,11 @@ module Dino
 
       # Try to read one byte from each address.
       (0..127).each do |address|
-        open_i2c(1, address)
+        i2c_open(1, address)
         byte = Pigpio::IF.i2c_read_byte(pi_handle, i2c_handle)
         # Add to the string colon separated if byte was valid.
         found_string << "#{address}:" if byte >= 0
-        close_i2c
+        i2c_close
       end
 
       # Remove trailing colon.
@@ -44,9 +44,9 @@ module Dino
       buffer = buffer.pack("C*")
 
       # Write it to the I2C1 interface.
-      open_i2c(1, address)
+      i2c_open(1, address)
       Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer, 0)
-      close_i2c
+      i2c_close
     end
 
     # CMD = 35
@@ -76,15 +76,15 @@ module Dino
       buffer = buffer.pack("C*")
 
       # Read from the I2C1 interface.
-      open_i2c(1, address)
-      bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer, num_bytes)
-      close_i2c
+      i2c_open(1, address)
+      read_bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer, num_bytes)
+      i2c_close
 
       # Format the bytes like dino expects from a microcontroller.
-      message = bytes.split("").map { |byte| byte.ord.to_s }.join(",")
+      message = read_bytes.split("").map { |byte| byte.ord.to_s }.join(",")
       message = "#{address}-#{message}"
 
-      # Call update as if it came from pin 2 (I2C1 SDA pin).
+      # Call update with the message, as if it came from pin 2 (I2C1 SDA pin).
       self.update(2, message)
     end
 
@@ -92,12 +92,12 @@ module Dino
 
     attr_reader :i2c_handle
 
-    def open_i2c(bus_index, address)
+    def i2c_open(bus_index, address)
       @i2c_handle = Pigpio::IF.i2c_open(pi_handle, bus_index, address, 0)
       raise StandardError, "I2C error, code #{@i2c_handle}" if @i2c_handle < 0
     end
 
-    def close_i2c
+    def i2c_close
       Pigpio::IF.i2c_close(pi_handle, i2c_handle)
       @i2c_handle = nil
     end
