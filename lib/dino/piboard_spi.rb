@@ -2,8 +2,9 @@ module Dino
   class PiBoard
 
     def spi_config(options={})
-      # Config is given as a 32-bit mask.
-      config = 0x0000
+      # Config is  a 32-bit mask, where bits 0 and 1 are a 2-bit number equal to the SPI mode.
+      config = options[:mode] || 0b00
+      raise ArgumentError, "invalid SPI mode #{config}" unless (0..3).include? config
 
       # Use SPI1 interface instead of SPI0.
       # Setting bit 8 means we're using SPI1.
@@ -15,19 +16,6 @@ module Dino
 
       # Bits 14 and 15 control MSBFIRST (0) or LSBFIRST (1) for MOSI and MISO respectively.
       config |= (0b11 << 14) if options[:bit_order] == :lsbfirst
-
-      # Bits 0 an 1 control the SPI mode.
-      case options[:spi_mode]
-      when 0
-        config |= 0b00
-      when 1
-        config |= 0b01
-      when 2
-        config |= 0b10
-      when 3
-        config |= 0b11
-      else
-      end
 
       return config
     end
