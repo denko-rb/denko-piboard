@@ -4,8 +4,9 @@ module Dino
     def i2c_search
       found_string = ""
 
-      # Try to read one byte from each address.
-      (0..127).each do |address|
+      # Address ranges 0..7 and 120..127 are reserved.
+      # Try each address in 8..19 (0x08 to 0x77).
+      (0x08..0x77).each do |address|
         i2c_open(1, address)
         byte = Pigpio::IF.i2c_read_byte(pi_handle, i2c_handle)
         # Add to the string colon separated if byte was valid.
