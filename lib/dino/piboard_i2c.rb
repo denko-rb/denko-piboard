@@ -28,7 +28,7 @@ module Dino
 
     # CMD = 34
     def i2c_write(address, bytes=[], options={})
-      raise ArgumentError, "can't write more than 65535 bytes to I2C" if bytes.length > 65535
+      raise ArgumentError, "can't write more than #{i2c_limit} bytes to I2C" if bytes.length > i2c_limit
 
       # Create a command buffer, starting with the raw I2C bytes.
       buffer = bytes.dup
@@ -64,7 +64,7 @@ module Dino
 
     # CMD = 35
     def i2c_read(address, register, read_length, options={})
-      raise ArgumentError, "can't read more than 65535 bytes to I2C" if read_length > 65535
+      raise ArgumentError, "can't read more than #{i2c_limit} bytes to I2C" if read_length > i2c_limit
 
       # Start with an empty buffer for the command sequence.
       buffer = []
