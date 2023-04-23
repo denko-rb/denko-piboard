@@ -119,6 +119,7 @@ sudo pigpiod -s 10
   - ToneOut (uses waves, one at a time per board, cancels any Infrared Out)
   - I2C
     - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
+    - I2C hardware clock cannot be set dynamically, like a microcontroller. Must set in `/boot/config.txt`. Default is 100 kHz. 400 kHz is recommended if you need to transfer a lot of data, like using a SSD1306 OLED. See [here](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/) for instructions.
 
 ### Partially Implemented
   - SPI
