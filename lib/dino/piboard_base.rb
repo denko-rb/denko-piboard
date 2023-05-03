@@ -21,6 +21,10 @@ module Dino
       exit(-1) if @pi_handle < 0
     end
 
+    def convert_pin(pin)
+      pin.to_i
+    end
+
     def finish_write
       Pigpio::IF.pigpio_stop(@pi_handle)
     end
