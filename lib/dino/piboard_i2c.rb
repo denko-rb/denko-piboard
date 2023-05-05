@@ -27,82 +27,56 @@ module Dino
     end
 
     # CMD = 34
-    def i2c_write(address, bytes=[], options={})
+    def i2c_write(address, bytes, frequency=100000, repeated_start=false)
       raise ArgumentError, "can't write more than #{i2c_limit} bytes to I2C" if bytes.length > i2c_limit
-
-      # Create a command buffer, starting with the raw I2C bytes.
-      buffer = bytes.dup
 
       # Pack length as a 16-bit uint, then unpack it into 2 litle endian bytes.
       length = [bytes.length].pack("S").unpack("C*")
 
-      # Prepend length bytes to the buffer in the right order.
-      buffer.unshift length.pop
-      buffer.unshift length.pop
+      # Prepend length to the bytes.
+      bytes = length + bytes
 
       # Prepend write command and escape character (necessary for double byte write length).
-      buffer.unshift 0x07
-      buffer.unshift 0x01
-
+      bytes = [0x01, 0x07] + bytes
+      
       # Enable and (re)disable repeated start as needed.
-      if options[:repeated_start]
-        buffer.unshift 0x02
-        buffer.push    0x03
-      end
+      bytes = [0x02] + bytes + [0x03] if repeated_start
 
       # Null terminate the command sequence.
-      buffer.push 0x00
+      bytes = bytes + [0x00]
 
-      # Pack it into a string as uint8.
-      buffer = buffer.pack("C*")
-
-      # Write it to the I2C1 interface.
+      # Send the command to the I2C1 interface, packed as uint8 string.
       i2c_open(1, address)
-      Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer, 0)
+      Pigpio::IF.i2c_zip(pi_handle, i2c_handle, bytes.pack("C*"), 0)
       i2c_close
     end
 
     # CMD = 35
-    def i2c_read(address, register, read_length, options={})
+    def i2c_read(address, register, read_length, frequency=100000, repeated_start=false)
       raise ArgumentError, "can't read more than #{i2c_limit} bytes to I2C" if read_length > i2c_limit
-
-      # Start with an empty buffer for the command sequence.
-      buffer = []
-
-      # Pack length as a 16-bit uint, then unpack it into 2 litle endian bytes.
-      length = [read_length].pack("S").unpack("C*")
-
-      # Prepend length bytes to the buffer in the right order.
-      buffer.unshift length.pop
-      buffer.unshift length.pop
+      
+      # Start with number of bytes to read (16-bit number) represented as 2 little endian bytes.
+      buffer = [read_length].pack("S").unpack("C*")
 
       # Prepend read command and escape character (necessary for double byte write length).
-      buffer.unshift 0x06
-      buffer.unshift 0x01
+      buffer = [0x01, 0x06] + buffer
 
       # If a start register was given, write it first.
-      # TODO: Only supports 1 byte register addresses.
       if register
-        buffer.unshift register
-        buffer.unshift 1
-        buffer.unshift 0x07
+        register = [register].flatten
+        raise ArgumentError, "can't pre-write a register address > 4 bytes" if register.length > 4
+        buffer = [0x07, register.length] + register + buffer
       end
 
       # Enable and (re)disable repeated start as needed.
-      if options[:repeated_start]
-        buffer.unshift 0x02
-        buffer.push    0x03
-      end
+      buffer = [0x02] + buffer + [0x03] if repeated_start
 
       # Null terminate the command sequence.
-      buffer.push 0x00
+      buffer = buffer + [0x00]
 
-      # Pack it into a string as uint8.
-      buffer = buffer.pack("C*")
-
-      # Read from the I2C1 interface.
+      # Send the command to the I2C1 interface, packed as uint8 string.
       i2c_open(1, address)
-      read_bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer, read_length)
+      read_bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer.pack("C*"), read_length)
       i2c_close
 
       # Format the bytes like dino expects from a microcontroller.
