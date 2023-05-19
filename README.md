@@ -45,20 +45,20 @@ ruby led_button.rb
 ```
 #### Modifying Examples
 The main gem has many [examples](https://github.com/austinbv/dino/tree/master/examples), but they need to be modified slightly to work with the Pi's GPIO:
-  - Find the line where the variable `board` is set. It should look something like `board = Dino::Board.new`.
+  - Find the line where the variable `board` is set. It should look like `board = Dino::Board.new`.
   - Remove all code up to, and including, that line. Replace it with:
     ```ruby
     require 'dino/piboard'
     board = Dino::PiBoard.new
     ```
-  - Update pin numbers as needed. Raspberry Pi pinouts can be found [here](https://pinout.xyz/).
+  - Update GPIO (pin) numbers as needed. Raspberry Pi pinouts can be found [here](https://pinout.xyz/).
   
-**Note:** Not all features used in all examples are implemented yet, nor can be implemented. See [Feautres](#features) below.
+**Note:** Not all features from all examples are implemented yet, nor can be implemented. See [Features](#features) below.
 
 ## Installation
-This gem uses the [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem, and [`pigpio`](https://github.com/joan2937/pigpio) C library for GPIO access.  
+This gem uses the [`pigpio`](https://github.com/joan2937/pigpio) C library and [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem which provides Ruby bindings.  
 
-This gem is very new. It WILL NOT work with the version of `dino` (0.11.3) currently available from RubyGems. Install the latest `dino` (future 0.13.0) from the master branch instead:
+This gem is very new. It __will not__ work with the version of `dino` (0.11.3) currently available from RubyGems. Install the latest version (future 0.13.0) from the master branch instead:
 ```shell
 git clone https://github.com/austinbv/dino.git
 cd dino
@@ -101,7 +101,7 @@ The `pigpio` C library includes `pigpiod`, which runs in the background as root,
 sudo pigpiod -s 10
 ```
 
-**Note:** `-s 10` sets `pigpiod` to tick every 10 microseconds, reducing CPU usage. Valid values are: 1,2,4,5,8,10 (5 default).
+**Note:** `-s 10` sets `pigpiod` to tick every 10 microseconds. Valid values are: 1, 2, 4, 5, 8, 10 (5 default).
 
 ## Features
 
