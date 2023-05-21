@@ -62,6 +62,8 @@ This gem is very new. It __will not__ work with the version of `dino` (0.11.3) c
 ```shell
 git clone https://github.com/austinbv/dino.git
 cd dino
+git submodule init
+git submodule update
 gem build
 gem install dino-0.13.0.gem
 ```
@@ -71,7 +73,7 @@ Install pigpo C library:
 sudo apt-get install pigpio
 ```
 
-The `pigpio` Ruby gem has a couple known bugs. Until pull requests with fixes are merged, please install from [this fork](https://github.com/vickash/ruby-extension-pigpio):
+The `pigpio` gem has a couple bugs. Until fixes are merged, please install from [this fork](https://github.com/vickash/ruby-extension-pigpio):
 ```shell
 git clone https://github.com/vickash/ruby-extension-pigpio.git
 cd ruby-extension-pigpio
@@ -95,8 +97,7 @@ sudo raspi-config
 Select "Interfacing Options" from the menu and enable as needed. More info in the [Features](#features) section.
 
 #### pigpiod
-The `pigpio` C library includes `pigpiod`, which runs in the background as root, providing GPIO access. Ruby scripts won't work if it isn't running. You should only need to start it once per boot. You can script it to start automatically, or start it manually with:
-
+The `pigpio` C library includes `pigpiod`, which runs in the background as root, providing GPIO access. Ruby scripts won't work if it isn't running. You should only need to start it once per boot. You can make it start automatically, or start it manually with:
 ```shell
 sudo pigpiod -s 10
 ```
