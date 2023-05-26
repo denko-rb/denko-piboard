@@ -5,86 +5,101 @@ module Dino
       65535
     end
 
+    def i2c_mutex
+      @i2c_mutex ||= Mutex.new
+    end
+
     # CMD = 33
     def i2c_search
-      found_string = ""
+      i2c_mutex.synchronize do
+        found_string = ""
 
-      # Address ranges 0..7 and 120..127 are reserved.
-      # Try each address in 8..19 (0x08 to 0x77).
-      (0x08..0x77).each do |address|
-        i2c_open(1, address)
-        byte = Pigpio::IF.i2c_read_byte(pi_handle, i2c_handle)
-        # Add to the string colon separated if byte was valid.
-        found_string << "#{address}:" if byte >= 0
-        i2c_close
+        # Address ranges 0..7 and 120..127 are reserved.
+        # Try each address in 8..19 (0x08 to 0x77).
+        (0x08..0x77).each do |address|
+          i2c_open(1, address)
+          byte = Pigpio::IF.i2c_read_byte(pi_handle, i2c_handle)
+          # Add to the string colon separated if byte was valid.
+          found_string << "#{address}:" if byte >= 0
+          i2c_close
+        end
+
+        # Remove trailing colon.
+        found_string.chop! unless found_string.empty?
+
+        # Update the bus as if message came from microcontroller.
+        self.update(2, found_string)
       end
-
-      # Remove trailing colon.
-      found_string.chop! unless found_string.empty?
-
-      # Update the bus as if message came from microcontroller.
-      self.update(2, found_string)
     end
 
     # CMD = 34
     def i2c_write(address, bytes, frequency=100000, repeated_start=false)
-      raise ArgumentError, "can't write more than #{i2c_limit} bytes to I2C" if bytes.length > i2c_limit
+      i2c_mutex.synchronize do
+        raise ArgumentError, "can't write more than #{i2c_limit} bytes to I2C" if bytes.length > i2c_limit
 
-      # Pack length as a 16-bit uint, then unpack it into 2 litle endian bytes.
-      length = [bytes.length].pack("S").unpack("C*")
+        # Pack length as a 16-bit uint, then unpack it into 2 litle endian bytes.
+        length = [bytes.length].pack("S").unpack("C*")
 
-      # Prepend length to the bytes.
-      bytes = length + bytes
+        # Prepend length to the bytes.
+        bytes = length + bytes
 
-      # Prepend write command and escape character (necessary for double byte write length).
-      bytes = [0x01, 0x07] + bytes
-      
-      # Enable and (re)disable repeated start as needed.
-      bytes = [0x02] + bytes + [0x03] if repeated_start
+        # Prepend write command and escape character (necessary for double byte write length).
+        bytes = [0x01, 0x07] + bytes
+        
+        # Enable and (re)disable repeated start as needed.
+        bytes = [0x02] + bytes + [0x03] if repeated_start
 
-      # Null terminate the command sequence.
-      bytes = bytes + [0x00]
+        # Null terminate the command sequence.
+        bytes = bytes + [0x00]
 
-      # Send the command to the I2C1 interface, packed as uint8 string.
-      i2c_open(1, address)
-      Pigpio::IF.i2c_zip(pi_handle, i2c_handle, bytes.pack("C*"), 0)
-      i2c_close
+        # Send the command to the I2C1 interface, packed as uint8 string.
+        i2c_open(1, address)
+        Pigpio::IF.i2c_zip(pi_handle, i2c_handle, bytes.pack("C*"), 0)
+        i2c_close
+      end
     end
 
     # CMD = 35
     def i2c_read(address, register, read_length, frequency=100000, repeated_start=false)
-      raise ArgumentError, "can't read more than #{i2c_limit} bytes to I2C" if read_length > i2c_limit
-      
-      # Start with number of bytes to read (16-bit number) represented as 2 little endian bytes.
-      buffer = [read_length].pack("S").unpack("C*")
+      i2c_mutex.synchronize do
+        raise ArgumentError, "can't read more than #{i2c_limit} bytes to I2C" if read_length > i2c_limit
+        
+        # Start with number of bytes to read (16-bit number) represented as 2 little endian bytes.
+        buffer = [read_length].pack("S").unpack("C*")
 
-      # Prepend read command and escape character (necessary for double byte write length).
-      buffer = [0x01, 0x06] + buffer
+        # Prepend read command and escape character (necessary for double byte write length).
+        buffer = [0x01, 0x06] + buffer
 
-      # If a start register was given, write it first.
-      if register
-        register = [register].flatten
-        raise ArgumentError, "can't pre-write a register address > 4 bytes" if register.length > 4
-        buffer = [0x07, register.length] + register + buffer
+        # If a start register was given, write it first.
+        if register
+          register = [register].flatten
+          raise ArgumentError, "can't pre-write a register address > 4 bytes" if register.length > 4
+          buffer = [0x07, register.length] + register + buffer
+        end
+
+        # Enable and (re)disable repeated start as needed.
+        buffer = [0x02] + buffer + [0x03] if repeated_start
+
+        # Null terminate the command sequence.
+        buffer = buffer + [0x00]
+
+        # Send the command to the I2C1 interface, packed as uint8 string.
+        i2c_open(1, address)
+        read_bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer.pack("C*"), read_length)
+        i2c_close
+
+        # Pigpio returned an error. Dino expects blank message after address.
+        if read_bytes.class == Integer
+          message = "#{address}-"
+        else
+          # Format the bytes like dino expects from a microcontroller.
+          message = read_bytes.split("").map { |byte| byte.ord.to_s }.join(",")
+          message = "#{address}-#{message}"
+        end
+        
+        # Call update with the message, as if it came from pin 2 (I2C1 SDA pin).
+        self.update(2, message)
       end
-
-      # Enable and (re)disable repeated start as needed.
-      buffer = [0x02] + buffer + [0x03] if repeated_start
-
-      # Null terminate the command sequence.
-      buffer = buffer + [0x00]
-
-      # Send the command to the I2C1 interface, packed as uint8 string.
-      i2c_open(1, address)
-      read_bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer.pack("C*"), read_length)
-      i2c_close
-
-      # Format the bytes like dino expects from a microcontroller.
-      message = read_bytes.split("").map { |byte| byte.ord.to_s }.join(",")
-      message = "#{address}-#{message}"
-
-      # Call update with the message, as if it came from pin 2 (I2C1 SDA pin).
-      self.update(2, message)
     end
 
     private
