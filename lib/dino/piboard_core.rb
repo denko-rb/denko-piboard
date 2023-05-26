@@ -1,7 +1,7 @@
 module Dino
   class PiBoard
     # CMD = 0
-    def set_pin_mode(pin, mode=:input)
+    def set_pin_mode(pin, mode=:input, glitch_time=nil)
       pwm_clear(pin)
       gpio = get_gpio(pin)
 
@@ -12,8 +12,11 @@ module Dino
       # Input
       else
         gpio.mode = PI_INPUT
-        # Only trigger state change if level has been stable for 90us.
-        gpio.glitch_filter(90)
+
+        # State change valid only if steady for this many microseconds.
+        if glitch_time
+          gpio.glitch_filter(glitch_time)
+        end
 
         # Pull down/up/none
         if mode.to_s.match /pulldown/
