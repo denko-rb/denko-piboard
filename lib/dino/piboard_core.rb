@@ -34,10 +34,12 @@ module Dino
     
     # CMD = 2
     def digital_read(pin)
-      if @pin_pwms[pin]
-        @pin_pwms[pin].dutycycle
-      else
-        get_gpio(pin).read
+      # This would return pin's pwm dutycycle. Maybe another method for that?
+      # @pin_pwms[pin].dutycycle
+      unless @pin_pwms[pin]
+        state = get_gpio(pin).read
+        self.update(pin, state)
+        return state
       end
     end
 
