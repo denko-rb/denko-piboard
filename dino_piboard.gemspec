@@ -12,6 +12,9 @@ Gem::Specification.new do |s|
   s.files       =  Dir['**/*'].reject { |f| f.match /.gem\z/}
   s.homepage    = 'https://github.com/dino-rb/dino-piboard'
   s.metadata    = { "source_code_uri" => "https://github.com/dino-rb/dino-piboard" }
+  
+  # libgpio C extension
+  s.extensions = %w[ext/libgpio/extconf.rb]
 
   s.add_dependency 'pigpio'
   s.add_dependency 'dino'

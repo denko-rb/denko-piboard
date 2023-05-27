@@ -56,7 +56,20 @@ The main gem has many [examples](https://github.com/austinbv/dino/tree/master/ex
 **Note:** Not all features from all examples are implemented yet, nor can be implemented. See [Features](#features) below.
 
 ## Installation
-This gem uses the [`pigpio`](https://github.com/joan2937/pigpio) C library and [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem which provides Ruby bindings.  
+This gem uses the [`pigpio`](https://github.com/joan2937/pigpio) C library and [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem which provides Ruby bindings. It also uses [`libgpiod`](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git).
+
+Install pigpio and libgpiod:
+```shell
+sudo apt install pigpio libgpiod-dev
+```
+
+The `pigpio` gem has a couple bugs. Until fixes are merged, please install from [this fork](https://github.com/vickash/ruby-extension-pigpio):
+```shell
+git clone https://github.com/vickash/ruby-extension-pigpio.git
+cd ruby-extension-pigpio
+gem build
+gem install ruby-extension-pigpio-0.1.11.gem
+```
 
 This gem is very new. It __will not__ work with the version of `dino` (0.11.3) currently available from RubyGems. Install the latest version (future 0.13.0) from the master branch instead:
 ```shell
@@ -66,19 +79,6 @@ git submodule init
 git submodule update
 gem build
 gem install dino-0.13.0.gem
-```
-
-Install pigpo C library:
-```shell
-sudo apt-get install pigpio
-```
-
-The `pigpio` gem has a couple bugs. Until fixes are merged, please install from [this fork](https://github.com/vickash/ruby-extension-pigpio):
-```shell
-git clone https://github.com/vickash/ruby-extension-pigpio.git
-cd ruby-extension-pigpio
-gem build
-gem install ruby-extension-pigpio-0.1.11.gem
 ```
 
 Finally, install this gem:
