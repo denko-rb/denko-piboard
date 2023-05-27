@@ -11,6 +11,7 @@ module Dino
       @components = []
       @pin_callbacks = []
       @pin_pwms = []
+      @pins = []
       
       @low  = 0
       @high = 1
@@ -53,7 +54,7 @@ module Dino
     attr_reader :pi_handle, :wave
 
     def get_gpio(pin)
-      Pigpio::UserGPIO.new(@pi_handle, pin)
+      @pins[pin] ||= Pigpio::UserGPIO.new(@pi_handle, pin)
     end
     
     def pwm_clear(pin)
