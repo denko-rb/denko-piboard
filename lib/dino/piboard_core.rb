@@ -8,12 +8,16 @@ module Dino
       # Output
       if mode.to_s.match /output/
         gpio.mode = PI_OUTPUT
+        
+        # Use pigpiod for setup, but still open it for libgpiod access.
+        Dino::LIBGPIO.open_line_output(pin)
 
       # Input
       else
         gpio.mode = PI_INPUT
 
         # State change valid only if steady for this many microseconds.
+        # Only applies to callbacks hooked through pigpiod
         if glitch_time
           gpio.glitch_filter(glitch_time)
         end
@@ -26,26 +30,32 @@ module Dino
         else
           gpio.pud = PI_PUD_OFF
         end
+        
+        # Use pigpiod for setup, but still open it for libgpiod access.
+        Dino::LIBGPIO.open_line_input(pin)
       end
     end
 
     # CMD = 1
     def digital_write(pin, value)
       pwm_clear(pin)
-      get_gpio(pin).write(value)
+      Dino::LIBGPIO.set_state(pin, value)
     end
     
     # CMD = 2
     def digital_read(pin)
-      # This would return pin's pwm dutycycle. Maybe another method for that?
-      # @pin_pwms[pin].dutycycle
       unless @pin_pwms[pin]
-        state = get_gpio(pin).read
+        state = Dino::LIBGPIO::get_state(pin)
         self.update(pin, state)
         return state
       end
     end
-
+    
+    # Same as above, but doesn't check for pwm or trigger callbacks.
+    def digital_read_raw(pin)
+      Dino::LIBGPIO::get_state(pin)
+    end
+    
     # CMD = 3
     def pwm_write(pin, value)
       # Disable servo if necessary.

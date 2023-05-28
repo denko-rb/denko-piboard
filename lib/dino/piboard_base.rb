@@ -17,8 +17,12 @@ module Dino
       @high = 1
       @pwm_high = 255
 
-      # Use the interface class directly.
+      # Use the pigpiod interface directly.
       @pi_handle = Pigpio::IF.pigpio_start
+      
+      # Start the libgpiod interface too.
+      Dino::LIBGPIO.open_chip
+          
       exit(-1) if @pi_handle < 0
     end
 
@@ -28,6 +32,7 @@ module Dino
 
     def finish_write
       Pigpio::IF.pigpio_stop(@pi_handle)
+      Dino::LIBGPIO.close_chip
     end
 
     def update(pin, message, time=nil)
