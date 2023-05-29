@@ -39,7 +39,7 @@ static VALUE open_line_output(VALUE self, VALUE gpio) {
   
   return_value = gpiod_line_request_output(lines[gpio_number], "GPIOD_RB", 0);
   if (return_value < 0) {
-    rb_raise(rb_eRuntimeError, "libgpiod error: Could not rquest output for GPIO line");
+    rb_raise(rb_eRuntimeError, "libgpiod error: Could not request output for GPIO line");
     gpiod_chip_close(chip);
     return Qnil;
   }
@@ -85,6 +85,7 @@ static VALUE open_line_input(VALUE self, VALUE gpio) {
 static VALUE get_state(VALUE self, VALUE gpio) {
   gpio_number = NUM2INT(gpio);
   
+  // Only try to close the line if it was opened before.
   return_value = gpiod_line_get_value(lines[gpio_number]);
   
   if (return_value < 0) {
@@ -98,6 +99,9 @@ static VALUE get_state(VALUE self, VALUE gpio) {
 
 static VALUE close_line(VALUE self, VALUE gpio) {
   gpio_number = NUM2INT(gpio);
+
+  if (lines[gpio_number] == NULL) return Qnil;
+
   gpiod_line_release(lines[gpio_number]);
   lines[gpio_number] = NULL;  
   return Qnil;

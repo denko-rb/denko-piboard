@@ -5,7 +5,7 @@ module Dino
   class PiBoard
     include Pigpio::Constant
       
-    attr_reader :components, :high, :low, :pwm_high
+    attr_reader :high, :low, :pwm_high
 
     def initialize
       @pins          = []

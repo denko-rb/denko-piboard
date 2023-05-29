@@ -2,6 +2,9 @@ module Dino
   class PiBoard
     # CMD = 0
     def set_pin_mode(pin, mode=:input, glitch_time=nil)
+      # Close the line in libgpiod, if was already open.
+      Dino::GPIOD.close_line(pin)
+
       pwm_clear(pin)
       gpio = get_gpio(pin)
 
@@ -9,7 +12,7 @@ module Dino
       if mode.to_s.match /output/
         gpio.mode = PI_OUTPUT
         
-        # Use pigpiod for setup, but still open it for libgpiod access.
+        # Use pigpiod for setup, but still open line in libgpiod.
         Dino::GPIOD.open_line_output(pin)
 
       # Input
@@ -17,7 +20,7 @@ module Dino
         gpio.mode = PI_INPUT
 
         # State change valid only if steady for this many microseconds.
-        # Only applies to callbacks hooked through pigpiod
+        # Only applies to callbacks hooked through pigpiod.
         if glitch_time
           gpio.glitch_filter(glitch_time)
         end
@@ -31,7 +34,7 @@ module Dino
           gpio.pud = PI_PUD_OFF
         end
         
-        # Use pigpiod for setup, but still open it for libgpiod access.
+        # Use pigpiod for setup, but still open line in libgpiod.
         Dino::GPIOD.open_line_input(pin)
       end
     end
@@ -65,7 +68,7 @@ module Dino
         @pwms[pin] = get_gpio(pin).pwm
         @pwms[pin].frequency = 1000
       end
-      @pin_pwms[pin].dutycycle = value
+      @pwms[pin].dutycycle = value
     end
 
     # CMD = 6
