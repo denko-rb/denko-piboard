@@ -6,7 +6,7 @@ module Dino
         pwm_clear(pin)
         digital_write(pin, 0)
       else
-        @pin_pwms[pin] = :servo
+        @pwms[pin] = :servo
       end
     end
     

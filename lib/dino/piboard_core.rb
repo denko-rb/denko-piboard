@@ -44,7 +44,7 @@ module Dino
     
     # CMD = 2
     def digital_read(pin)
-      unless @pin_pwms[pin]
+      unless @pwms[pin]
         state = Dino::GPIOD.get_state(pin)
         self.update(pin, state)
         return state
@@ -59,11 +59,11 @@ module Dino
     # CMD = 3
     def pwm_write(pin, value)
       # Disable servo if necessary.
-      pwm_clear(pin) if @pin_pwms[pin] == :servo
+      pwm_clear(pin) if @pwms[pin] == :servo
 
-      unless @pin_pwms[pin]
-        @pin_pwms[pin] = get_gpio(pin).pwm
-        @pin_pwms[pin].frequency = 1000
+      unless @pwms[pin]
+        @pwms[pin] = get_gpio(pin).pwm
+        @pwms[pin].frequency = 1000
       end
       @pin_pwms[pin].dutycycle = value
     end

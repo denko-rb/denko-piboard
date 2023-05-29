@@ -8,22 +8,20 @@ module Dino
     attr_reader :components, :high, :low, :pwm_high
 
     def initialize
-      @components = []
+      @pins          = []
       @pin_callbacks = []
-      @pin_pwms = []
-      @pins = []
-      
-      @low  = 0
-      @high = 1
-      @pwm_high = 255
+      @pwms          = []
+
+      @low           = 0
+      @high          = 1
+      @pwm_high      = 255
 
       # Use the pigpiod interface directly.
       @pi_handle = Pigpio::IF.pigpio_start
+      exit(-1) if @pi_handle < 0
       
       # Start the libgpiod interface too.
       Dino::GPIOD.open_chip
-          
-      exit(-1) if @pi_handle < 0
     end
 
     def convert_pin(pin)
@@ -55,7 +53,7 @@ module Dino
     end
     
     def pwm_clear(pin)
-      @pin_pwms[pin] = nil
+      @pwms[pin] = nil
     end
 
     def new_wave
