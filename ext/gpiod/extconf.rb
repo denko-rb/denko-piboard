@@ -6,4 +6,4 @@ require 'mkmf'
 #
 $libs += " -lgpiod"
 
-create_makefile('libgpio/libgpio')
+create_makefile('gpiod/gpiod')

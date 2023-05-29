@@ -21,7 +21,7 @@ module Dino
       @pi_handle = Pigpio::IF.pigpio_start
       
       # Start the libgpiod interface too.
-      Dino::LIBGPIO.open_chip
+      Dino::GPIOD.open_chip
           
       exit(-1) if @pi_handle < 0
     end
@@ -32,7 +32,7 @@ module Dino
 
     def finish_write
       Pigpio::IF.pigpio_stop(@pi_handle)
-      Dino::LIBGPIO.close_chip
+      Dino::GPIOD.close_chip
     end
 
     def update(pin, message, time=nil)

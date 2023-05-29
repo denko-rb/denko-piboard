@@ -1,4 +1,4 @@
-require_relative '../libgpio'
+require_relative '../gpiod'
 require_relative 'piboard_version'
 require_relative 'piboard_base'
 require_relative 'piboard_core'

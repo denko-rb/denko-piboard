@@ -10,7 +10,7 @@ module Dino
         gpio.mode = PI_OUTPUT
         
         # Use pigpiod for setup, but still open it for libgpiod access.
-        Dino::LIBGPIO.open_line_output(pin)
+        Dino::GPIOD.open_line_output(pin)
 
       # Input
       else
@@ -32,20 +32,20 @@ module Dino
         end
         
         # Use pigpiod for setup, but still open it for libgpiod access.
-        Dino::LIBGPIO.open_line_input(pin)
+        Dino::GPIOD.open_line_input(pin)
       end
     end
 
     # CMD = 1
     def digital_write(pin, value)
       pwm_clear(pin)
-      Dino::LIBGPIO.set_state(pin, value)
+      Dino::GPIOD.set_state(pin, value)
     end
     
     # CMD = 2
     def digital_read(pin)
       unless @pin_pwms[pin]
-        state = Dino::LIBGPIO::get_state(pin)
+        state = Dino::GPIOD.get_state(pin)
         self.update(pin, state)
         return state
       end
@@ -53,7 +53,7 @@ module Dino
     
     # Same as above, but doesn't check for pwm or trigger callbacks.
     def digital_read_raw(pin)
-      Dino::LIBGPIO::get_state(pin)
+      Dino::GPIOD.get_state(pin)
     end
     
     # CMD = 3

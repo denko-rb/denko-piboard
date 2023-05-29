@@ -89,6 +89,11 @@ gem install dino-piboard
 **Note:** Add `sudo` before `gem install` if using the system Ruby. Rubies from [`rbenv`](https://github.com/rbenv/rbenv) won't need it.
 
 ## Pi Setup
+Depending on the operating system on your Pi, libgpiod may limit GPIO access to the root user. If this is the case, Ruby scripts will fail with a `libgpiod` error. To give your user account permission to access GPIO, add it to the `gpio` group.
+```
+sudo usermod -a -G gpio YOUR_USERNAME
+```
+
 I2C, SPI and the hardware UART are disabled on the Pi by default. Enable them with the built in utility:
 ```shell
 sudo raspi-config

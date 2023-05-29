@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.metadata    = { "source_code_uri" => "https://github.com/dino-rb/dino-piboard" }
   
   # libgpio C extension
-  s.extensions = %w[ext/libgpio/extconf.rb]
+  s.extensions = %w[ext/gpiod/extconf.rb]
 
   s.add_dependency 'pigpio'
   s.add_dependency 'dino'
