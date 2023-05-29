@@ -35,23 +35,15 @@ module Dino
       Dino::GPIOD.close_chip
     end
 
+    #
+    # Use standard Subcomponents behavior.
+    #
+    include Behaviors::Subcomponents
+
     def update(pin, message, time=nil)
-      update_component(pin, message)
-    end
-
-    def update_component(pin, message)
-      @components.each do |part|
-        part.update(message) if part.pin.to_i == pin
+      if single_pin_components[pin]
+        single_pin_components[pin].update(message)
       end
-    end
-
-    def add_component(component)
-      @components << component
-    end
-
-    def remove_component(component)
-      component.stop if component.methods.include? :stop
-      @components.delete(component)
     end
 
     private
