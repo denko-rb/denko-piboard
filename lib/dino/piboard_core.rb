@@ -42,21 +42,16 @@ module Dino
     # CMD = 1
     def digital_write(pin, value)
       pwm_clear(pin)
-      Dino::GPIOD.set_state(pin, value)
+      Dino::GPIOD.set_value(pin, value)
     end
     
     # CMD = 2
     def digital_read(pin)
       unless @pwms[pin]
-        state = Dino::GPIOD.get_state(pin)
+        state = Dino::GPIOD.get_value(pin)
         self.update(pin, state)
         return state
       end
-    end
-    
-    # Same as above, but doesn't check for pwm or trigger callbacks.
-    def digital_read_raw(pin)
-      Dino::GPIOD.get_state(pin)
     end
     
     # CMD = 3
