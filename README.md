@@ -44,12 +44,26 @@ Run it:
 ruby led_button.rb
 ```
 #### Modifying Examples
-The main gem has many [examples](https://github.com/austinbv/dino/tree/master/examples), but they need to be modified slightly to work with the Pi's GPIO:
-  - Find the line where the variable `board` is set. It should look like `board = Dino::Board.new`.
-  - Remove all code up to, and including, that line. Replace it with:
+In the [examples](examples) folder of this gem, you will find examples specific to the Raspberry Pi. These should run as-is, but may need additional libraries or Linux tools to be installed.
+
+Most of the examples are in the main gem's [examples](https://github.com/austinbv/dino/tree/master/examples) folder, but they need to be modified slightly to work with the Pi's GPIO:
+  - Replace:
     ```ruby
-    require 'dino/piboard'
-    board = Dino::PiBoard.new
+      require 'bundler/setup'
+      require 'dino'
+    ```
+    With:
+    ```ruby
+      require 'dino/piboard
+    ```
+  - Replace:
+    ```ruby
+      connection = Dino::Connection::Serial.new()
+      board = Dino::Piboard.new()
+    ```
+    With
+    ```ruby
+      board = Dino::PiBoard.new
     ```
   - Update GPIO (pin) numbers as needed. Raspberry Pi pinouts can be found [here](https://pinout.xyz/).
   
