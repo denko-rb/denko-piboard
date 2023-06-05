@@ -24,10 +24,6 @@ module Dino
       Dino::GPIOD.open_chip
     end
 
-    def convert_pin(pin)
-      pin.to_i
-    end
-
     def finish_write
       Pigpio::IF.pigpio_stop(@pi_handle)
       Dino::GPIOD.close_chip

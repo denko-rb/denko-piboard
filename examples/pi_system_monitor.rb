@@ -16,7 +16,7 @@ require 'dino/piboard'
 BAR_ELEMENT = [0x00, 0x7E, 0x7E, 0x7E, 0x00]
 
 board = Dino::PiBoard.new
-i2c = Dino::I2C::Bus.new(board: board, pin: 2)
+i2c = Dino::I2C::Bus.new(board: board, pin: :SDA)
 
 oled = Dino::Display::SSD1306.new(bus: i2c, rotate: true)
 canvas = oled.canvas

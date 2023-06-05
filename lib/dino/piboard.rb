@@ -1,5 +1,6 @@
 require_relative '../gpiod'
 require_relative 'piboard_version'
+require_relative 'piboard_map'
 require_relative 'piboard_base'
 require_relative 'piboard_core'
 require_relative 'piboard_servo'
