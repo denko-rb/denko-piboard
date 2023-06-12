@@ -43,34 +43,32 @@ Run it:
 ```shell
 ruby led_button.rb
 ```
-#### Modifying Examples
-In the [examples](examples) folder of this gem, you will find examples specific to the Raspberry Pi. These should run as-is, but may need additional libraries or Linux tools to be installed.
+#### More Examples
+Some Raspberry Pi specific code is shown in the [examples](examples) folder. These may need additional Linux packages.
 
-Most of the examples are in the main gem's [examples](https://github.com/austinbv/dino/tree/master/examples) folder, but they need to be modified slightly to work with the Pi's GPIO:
-  - Replace:
-    ```ruby
-      require 'bundler/setup'
-      require 'dino'
-    ```
-    With:
-    ```ruby
-      require 'dino/piboard
-    ```
-  - Replace:
-    ```ruby
-      connection = Dino::Connection::Serial.new()
-      board = Dino::Piboard.new()
-    ```
-    With
-    ```ruby
-      board = Dino::PiBoard.new
-    ```
-  - Update GPIO (pin) numbers as needed. Raspberry Pi pinouts can be found [here](https://pinout.xyz/).
+Most examples are in the [main gem examples](https://github.com/austinbv/dino/tree/master/examples) folder, and must be modified slightly to work on the Pi GPIO:
+
+- Replace require and new:
+  ```ruby
+    # Replace this:
+    require 'bundler/setup'
+    require 'dino'
+    # With this:
+    require 'dino/piboard'
+
+    # Replace this:
+    connection = Dino::Connection::Serial.new()
+    board = Dino::Piboard.new()
+    # With this:
+    board = Dino::PiBoard.new
+  ```
+
+- Update GPIO/pin numbers as needed. Raspberry Pi pinouts can be found [here](https://pinout.xyz/).
   
 **Note:** Not all features from all examples are implemented yet, nor can be implemented. See [Features](#features) below.
 
 ## Installation
-This gem uses the [`pigpio`](https://github.com/joan2937/pigpio) C library and [`pigpio`](https://github.com/nak1114/ruby-extension-pigpio) gem which provides Ruby bindings. It also uses [`libgpiod`](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git).
+This gem uses the [pigpio library](https://github.com/joan2937/pigpio) and [pigpio gem](https://github.com/nak1114/ruby-extension-pigpio) gem which provides Ruby bindings. It also uses [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git).
 
 Install pigpio and libgpiod:
 ```shell
@@ -100,10 +98,10 @@ Finally, install this gem:
 gem install dino-piboard
 ```
 
-**Note:** Add `sudo` before `gem install` if using the system Ruby. Rubies from [`rbenv`](https://github.com/rbenv/rbenv) won't need it.
+**Note:** `sudo` may be needed before `gem install` if using the system Ruby.
 
 ## Pi Setup
-Depending on the operating system on your Pi, libgpiod may limit GPIO access to the root user. If this is the case, Ruby scripts will fail with a `libgpiod` error. To give your user account permission to access GPIO, add it to the `gpio` group.
+Depending on your Pi setup, libgpiod may limit GPIO access to the `root` user. If this is the case, Ruby scripts will fail with a `libgpiod` error. To give your user account permission to access GPIO, add it to the `gpio` group.
 ```
 sudo usermod -a -G gpio YOUR_USERNAME
 ```
@@ -116,12 +114,12 @@ sudo raspi-config
 Select "Interfacing Options" from the menu and enable as needed. More info in the [Features](#features) section.
 
 #### pigpiod
-The `pigpio` C library includes `pigpiod`, which runs in the background as root, providing GPIO access. Ruby scripts won't work if it isn't running. You should only need to start it once per boot. You can make it start automatically, or start it manually with:
+The `pigpio` package includes `pigpiod`, which runs in the background as root, providing GPIO access. Ruby scripts won't work if it isn't running. You should only need to start it once per boot. You can automate it, or start manually with:
 ```shell
 sudo pigpiod -s 10
 ```
 
-**Note:** `-s 10` sets `pigpiod` to tick every 10 microseconds. Valid values are: 1, 2, 4, 5, 8, 10 (5 default).
+**Note:** `-s 10` sets `pigpiod` to tick every 10 microseconds, lowering CPU use. Valid values are: 1, 2, 4, 5, 8, 10 (5 default).
 
 ## Features
 
@@ -129,8 +127,8 @@ sudo pigpiod -s 10
   - Internal Pull Down/Up
   - Digital Out
   - Digital In
-  - PWM Out (use on any pin disables Pi's analog audio out, cancels Servo on same pin)
-  - Servo   (use on any pin disables Pi's analog audio out, cancels PWM Out on same pin)
+  - PWM Out (use on any pin disables PCM out, cancels Servo on same pin)
+  - Servo   (use on any pin disables PCM out, cancels PWM Out on same pin)
   - ToneOut (uses waves, one at a time per board, cancels any Infrared Out)
   - I2C
     - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).

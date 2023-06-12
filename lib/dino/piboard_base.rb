@@ -20,7 +20,7 @@ module Dino
       @pi_handle = Pigpio::IF.pigpio_start
       exit(-1) if @pi_handle < 0
       
-      # Start the libgpiod interface too.
+      # Open the libgpiod interface too.
       Dino::GPIOD.open_chip
     end
 
