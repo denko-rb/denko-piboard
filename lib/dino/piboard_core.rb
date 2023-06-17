@@ -66,8 +66,8 @@ module Dino
       @pwms[pin].dutycycle = value
     end
 
-    # CMD = 6
-    def set_listener(pin, state=:off, options={})
+    # PiGPIO native callbacks. Unused now.
+    def set_alert(pin, state=:off, options={})
       # Listener on
       if state == :on && !@pin_callbacks[pin]
         callback = get_gpio(pin).callback(EITHER_EDGE) do |tick, level, pin_cb|
@@ -82,12 +82,90 @@ module Dino
       end
     end
 
+    # CMD = 6
+    def set_listener(pin, state=:off, options={})
+      # Listener on
+      if state == :on && !@pin_listeners.include?(pin)
+        add_listener(pin)
+      else
+        remove_listener(pin)
+      end
+    end
+
     def digital_listen(pin, divider=4)
       set_listener(pin, :on, {})
     end
 
     def stop_listener(pin)
       set_listener(pin, :off)
+    end
+
+    def add_listener(pin)
+      @listen_mutex.synchronize do
+        @pin_listeners |= [pin]
+        @pin_listeners.sort!
+        @listen_states[pin] = Dino::GPIOD.get_value(pin)
+      end
+      start_listen_thread
+    end
+    
+    def remove_listener(pin)
+      @listen_mutex.synchronize do
+        @pin_listeners.delete(pin)
+        @listen_states[pin] = nil
+      end
+    end
+    
+    def start_listen_thread
+      return if @listen_thread
+      
+      @listen_thread = Thread.new do
+        #
+        # @listen_monitor_thread will adjust sleep time dyanmically,
+        # targeting even timing of 1 millisecond between loops.
+        #
+        @listen_count = 0
+        @listen_sleep = 0.001
+        start_time = Time.now
+
+        loop do
+          @listen_mutex.synchronize do
+            @pin_listeners.each do |pin|
+              @listen_reading = Dino::GPIOD.get_value(pin)
+              self.update(pin, @listen_reading) if (@listen_reading != @listen_states[pin])
+              @listen_states[pin] = @listen_reading
+            end
+          end
+          @listen_count += 1
+          sleep(@listen_sleep)
+        end
+      end
+
+      @listen_monitor_thread = Thread.new do
+        loop do
+          # Sample the listen rate over 5 seconds.
+          time1  = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          count1 = @listen_count
+          sleep(5)
+          time2  = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          count2 = @listen_count
+          
+          # Quick maths.
+          loops = count2 - count1
+          time  = time2 - time1
+          active_time_per_loop = (time - (loops * @listen_sleep)) / loops
+
+          # Target 1 millisecond.
+          @listen_sleep = 0.001 - active_time_per_loop
+        end
+      end
+    end
+    
+    def stop_listen_thread
+      @listen_monitor_thread.kill
+      @listen_monitor_thread = nil
+      @listen_thread.kill
+      @listen_thread = nil
     end
   end
 end

@@ -8,10 +8,21 @@ module Dino
     attr_reader :high, :low, :pwm_high
 
     def initialize
+      # Pin state
       @pins          = []
-      @pin_callbacks = []
       @pwms          = []
 
+      # Listener state
+      @pin_listeners  = []
+      @listen_mutex   = Mutex.new
+      @listen_states  = Array.new(32) { 0 }
+      @listen_thread  = nil
+      @listen_reading = 0
+      
+      # PiGPIO callback state. Unused for now.
+      @pin_callbacks = []
+
+      # Logic levels
       @low           = 0
       @high          = 1
       @pwm_high      = 255
