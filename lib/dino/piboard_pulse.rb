@@ -7,7 +7,7 @@ module Dino
       raise ArgumentError, "error in reset: #{reset}. Should be either #{high} or #{low}"         if reset && ![high, low].include?(reset)
       raise ArgumentError, "errror in reset_time: #{reset_time}. Should be 0..65535 microseconds" if (reset_time < 0) || (reset_time > 0xFFFF)
       raise ArgumentError, "errror in pulse_limit: #{pulse_limit}. Should be 0..255 pulses"       if (pulse_limit < 0) || (pulse_limit > 0xFF)
-      raise ArgumentError, "errror in timeout: #{timeout}. Should be 0..65535 milliseconds"       if (pulse_limit < 0) || (pulse_limit > 0xFF)
+      raise ArgumentError, "errror in timeout: #{timeout}. Should be 0..65535 milliseconds"       if (timeout < 0) || (timeout > 0xFFFF)
 
       if reset
         # Reset pulse will be captured as the first 2 edges.
