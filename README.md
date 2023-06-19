@@ -134,10 +134,11 @@ sudo pigpiod -s 10
   - PWM Out (use on any pin disables PCM out, cancels Servo on same pin)
   - Servo   (use on any pin disables PCM out, cancels PWM Out on same pin)
   - ToneOut (uses waves, one at a time per board, cancels any Infrared Out)
+  - Infrared Out (uses waves, one at a time per board, cancels any Tone Out)
+  - DHT Class Temperature + Humidity Sensors
   - I2C
     - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
     - I2C hardware clock cannot be set dynamically, like a microcontroller. Must set in `/boot/config.txt`. Default is 100 kHz. 400 kHz recommended if transferring a lot of data, like with SSD1306 OLED. See [here](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/) for instructions.
-  - DHT Class Temperature + Humidity Sensors
 
 ### Partially Implemented
   - SPI
@@ -149,7 +150,6 @@ sudo pigpiod -s 10
 
 ### To Be Implemented
   - OneWire
-  - Infrared Out
   - Hardware UART
   - BitBang I2C
   - BitBang SPI 
