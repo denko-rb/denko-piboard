@@ -60,10 +60,16 @@ module Dino
       # Ignore the first 2 edges (enable pulse) if reset used, 1 edge (starting reference) if not.
       pulse_offset = reset ? 2 : 1
       pulse_count  = edge_index - pulse_offset
-      pulses       = Array.new(pulse_count) {0}
 
+      # Handle no pulses read.
+      if pulse_count < 1
+        self.update(pin, "")
+        return nil
+      end
+      
       # Convert from edge times to pulses.
       i = 0
+      pulses = Array.new(pulse_count) {0}
       while i < pulse_count
         pulses[i] = edges[i+pulse_offset] - edges[i+pulse_offset-1]
         i += 1
