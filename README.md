@@ -2,7 +2,7 @@
 
 ### Raspberry Pi GPIO in Ruby
 
-This gem adds support for the Raspberry Pi GPIO interface to the [`dino`](https://github.com/austinbv/dino) gem. Unlike the main gem, which uses an external microcontroller, connected to a computer, this lets you to connect peripherals directly to the Pi.
+This gem adds support for the Raspberry Pi GPIO interface to the [`dino`](https://github.com/austinbv/dino) gem. Unlike the main gem, which requires an external microcontroller, this lets you to connect peripherals directly to the Pi.
 
 `Dino::PiBoard` is a drop-in replacement for `Dino::Board`, which would represent a connected micrcontroller. Everything maps to the Pi's built-in GPIO pins instead.
 

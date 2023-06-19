@@ -8,6 +8,9 @@ module Dino
     attr_reader :high, :low, :pwm_high
 
     def initialize
+      # On 64-bit systems there's a pigpio bug where wavelengths are doubled.
+      @aarch64 = RUBY_PLATFORM.match(/aarch64/)
+
       # Pin state
       @pins          = []
       @pwms          = []
