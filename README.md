@@ -138,7 +138,7 @@ Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) a
   - I2C
     - Always uses I2C1 interface.
     - Must enable before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
-    - I2C hardware clock cannot be set dynamically, like a microcontroller. Must set in `/boot/config.txt`. Default is 100 kHz. 400 kHz recommended if transferring a lot of data, like with SSD1306 OLED. See [here](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/) for instructions.
+    - I2C clock cannot be set dynamically. It is set at boot time from `/boot/config.txt`. Default is 100 kHz. 400 kHz is recommended if higher data rate is needed, eg. using OLED screen. Instructions [here](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/).
 
 ### Partially Implemented
 - SPI
@@ -155,10 +155,6 @@ Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) a
 - Tone Out / Infrared Out
   - Both of these use pigpio's wave interface, which only has a single instance. Calling either on **any** pin automatically stops any running instance that exists. Both features can co-exist in a script, but cannot happen at the same time.
 
-### Incompatible
-  - EEPROM (Use the filesystem for persistence instead)
-  - Analog IO (No analog pins on Raspberry Pi. Use ADC or DAC over I2C or SPI)
-
 ### To Be Implemented
   - OneWire
   - Hardware UART
@@ -166,3 +162,7 @@ Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) a
   - BitBang SPI 
   - BitBang UART
   - WS2812
+
+### Incompatible
+  - EEPROM (Use the filesystem for persistence instead)
+  - Analog IO (No analog pins on Raspberry Pi. Use ADC or DAC over I2C or SPI)
