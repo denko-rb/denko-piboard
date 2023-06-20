@@ -120,7 +120,7 @@ sudo raspi-config
 # On DietPi:
 sudo dietpi-config
 ```
-Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) and enable features as needed. More info in the [Features](#features) section.
+Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) and enable features as needed.
 
 ## Features
 
@@ -129,7 +129,7 @@ Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) a
   - Digital Out
   - Digital In
     - Listeners are polled in a thread, similar to a microcontroller, but always at 1ms.
-    - `pigpio` supports even faster polling (1-10 microseconds), but events are not received in a consistent order across pins. Won't work for MultiPin components, but may implement later for SinglePin.
+    - `pigpio` supports even faster polling (1-10 microseconds), but events are not received in a consistent order across pins. Won't work for MultiPin components, but may implement for SinglePin.
   - PWM Out
   - Servo
   - Tone Out
@@ -142,13 +142,13 @@ Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) a
 
 ### Partially Implemented
 - SPI
-  - Only Uses SPI1 interface, not SPI0. 
+  - Always uses SPI1 interface.
   - Must enable before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi).
   - Does not bind CE pins according to GPIO pinout. Any pin can be used for chip enable.
   - SPI modes 1 and 3 may not work.
   - No listeners yet.
 
-#### Notes
+### Feature Exclusivity
 - PWM Out / Servo Out
   - Using either of these on **any** pin disables the Pi's PCM audio output globally.
 
