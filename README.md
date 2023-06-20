@@ -4,7 +4,7 @@
 
 This gem adds support for the Raspberry Pi GPIO interface to the [`denko`](https://github.com/denko-rb/denko) gem. Unlike the main gem, which requires an external microcontroller, this lets you to connect peripherals directly to the Pi.
 
-`Denko::PiBoard` is a drop-in replacement for `Denko::Board`, which would represent a connected micrcontroller. Everything maps to the Pi's built-in GPIO pins instead.
+`Denko::PiBoard` is a drop-in replacement for `Denko::Board`, which would represent a connected micrcontroller. Everything maps to the Pi's built-in GPIO pins instead, and Ruby runs on the Pi itself.
 
 **Note:** This is not for the Raspberry Pi Pico (W) / RP2040. That microcontroller works with the main gem.
 
@@ -43,8 +43,9 @@ Run it:
 ```shell
 ruby led_button.rb
 ```
+
 #### More Examples
-Some Pi-specific code is shown in this gem's [examples](examples) folder, but most examples are in the [main gem](https://github.com/denko-rb/denko/tree/master/examples). They must be modified to work with the Pi's GPIO:
+Pi-specific examples will be in this gem's [examples](examples) folder, but most examples are in the [main gem](https://github.com/denko-rb/denko/tree/master/examples). They must be modified to work with the Pi's GPIO:
 
 1. Replace setup code:
   ```ruby
@@ -66,7 +67,12 @@ Some Pi-specific code is shown in this gem's [examples](examples) folder, but mo
 **Note:** Not all features from all examples are implemented yet, nor can be implemented. See [Features](#features) below.
 
 ## Installation
-This gem depends on the [pigpio library](https://github.com/joan2937/pigpio) and [pigpio gem](https://github.com/nak1114/ruby-extension-pigpio), which provides Ruby bindings, as well as [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git).
+
+#### OS Requirements
+This is tested on DietPi and Raspberry Pi OS, both based on Debian 11 (Bullseye), with kernel version 6.1 or higher.
+
+#### Dependencies
+This gem depends on [pigpio](https://github.com/joan2937/pigpio), the [pigpio gem](https://github.com/nak1114/ruby-extension-pigpio) to provide Ruby bindings, and [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git).
 
 #### 1. Install pigpio and libgpiod packages
 ```shell
@@ -76,54 +82,45 @@ sudo apt install pigpio libgpiod-dev
 #### 2. Install pigpio gem
 The `pigpio` gem has a couple bugs. Until fixes are merged, please install from [this fork](https://github.com/vickash/ruby-extension-pigpio):
 ```shell
-git clone https://github.com/vickash/ruby-extension-pigpio.git
+git clone https://github.com/denko-rb/ruby-extension-pigpio.git
 cd ruby-extension-pigpio
 gem build
 gem install ruby-extension-pigpio-0.1.11.gem
 ```
 
-#### 3. Install denko gem
-This gem is very new. It __will not__ work with the version of `denko` (0.11.3) currently available from RubyGems. Install the latest version (future 0.13.0) from the master branch instead:
+#### 3. Install denko-piboard gem
 ```shell
-git clone https://github.com/denko-rb/denko.git
-cd denko
-git submodule init
-git submodule update
-gem build
-gem install denko-0.13.0.gem
+gem install denko-piboard
 ```
+This will automatically install the main `denko` gem and any other dependencies.
 
-#### 4. Install denko/piboard gem
-Again, since this gem is so new, install from the latest master branch:
-```shell
-git clone https://github.com/denko-rb/denko-piboard.git
-cd denko-piboard
-gem build
-gem install denko-piboard-0.13.0.gem
-```
-
-**Note:** `sudo` may be needed before `gem install` if using the preinstalled Ruby on a Raspberry Pi.
+**Note:** `sudo` may be needed before `gem install` if using the preinstalled Ruby on a Pi.
 
 ## Pi Setup
-Depending on your Pi setup, libgpiod may limit GPIO access to the `root` user. If this is the case, Ruby scripts will fail with a `libgpiod` error. To give your user account permission to access GPIO, add it to the `gpio` group.
-```
-sudo usermod -a -G gpio YOUR_USERNAME
-```
-
-I2C, SPI and the hardware UART are disabled on the Pi by default. Enable them with the built in utility:
-```shell
-sudo raspi-config
-```
-
-Select "Interfacing Options" from the menu and enable as needed. More info in the [Features](#features) section.
 
 #### pigpiod
-The `pigpio` package includes `pigpiod`, which runs in the background as root, providing GPIO access. Ruby scripts won't work if it isn't running. You should only need to start it once per boot. You can automate it, or start manually with:
+The `pigpio` package installs `pigpiod`, which needs to be running in the background as root for Ruby scripts to work. You should only need to start it once per boot. Automate it, or start manually with:
 ```shell
 sudo pigpiod -s 10
 ```
+**Note:** `-s 10` sets tick interval to 10 microseconds, lowering CPU use. Valid values are: 1, 2, 4, 5, 8, 10 (5 default).
 
-**Note:** `-s 10` sets `pigpiod` to tick every 10 microseconds, lowering CPU use. Valid values are: 1, 2, 4, 5, 8, 10 (5 default).
+#### libgpiod
+Depending on your Pi and OS, `libgpiod` may limit GPIO access. If this is the case, some scripts will fail with a `libgpiod` error. It is only used for low-level digital read/write operations, so check using a simple script like blinking an LED. To get `libgpiod` permission, add your user account to the `gpio` group:
+```
+sudo usermod -a -G gpio $(whoami)
+```
+
+#### Features
+I2C, SPI and the hardware UART may be disabled on the Pi by default. Enable them with the built-in utility:
+```shell
+# On Raspberry Pi OS:
+sudo raspi-config
+
+# On DietPi:
+sudo dietpi-config
+```
+Select "Interfacing Options" (Raspberry Pi OS), or "Advanced Options" (DietPi) and enable features as needed. More info in the [Features](#features) section.
 
 ## Features
 
@@ -131,22 +128,36 @@ sudo pigpiod -s 10
   - Internal Pull Down/Up
   - Digital Out
   - Digital In
-  - PWM Out (use on any pin disables PCM out, cancels Servo on same pin)
-  - Servo   (use on any pin disables PCM out, cancels PWM Out on same pin)
-  - ToneOut (uses waves, one at a time per board, cancels any Infrared Out)
-  - Infrared Out (uses waves, one at a time per board, cancels any Tone Out)
+    - Listeners are polled in a thread, similar to a microcontroller, but always at 1ms.
+    - `pigpio` supports even faster polling (1-10 microseconds), but events are not received in a consistent order across pins. Won't work for MultiPin components, but may implement later for SinglePin.
+  - PWM Out
+  - Servo
+  - Tone Out
+  - Infrared Out
   - DHT Class Temperature + Humidity Sensors
   - I2C
-    - Must enable with `raspi-config` before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
+    - Always uses I2C1 interface.
+    - Must enable before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c).
     - I2C hardware clock cannot be set dynamically, like a microcontroller. Must set in `/boot/config.txt`. Default is 100 kHz. 400 kHz recommended if transferring a lot of data, like with SSD1306 OLED. See [here](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/) for instructions.
 
 ### Partially Implemented
-  - SPI
-    - Must enable with `raspi-config` before use. Insturctions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi).
-    - Only Uses SPI1 interface, not SPI0.
-    - Does not bind CE pins according to GPIO pinout. Any pin can be used for chip enable.
-    - SPI modes 1 and 3 may not work.
-    - No listeners yet.
+- SPI
+  - Only Uses SPI1 interface, not SPI0. 
+  - Must enable before use. Instructions [here](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi).
+  - Does not bind CE pins according to GPIO pinout. Any pin can be used for chip enable.
+  - SPI modes 1 and 3 may not work.
+  - No listeners yet.
+
+#### Notes
+- PWM Out / Servo Out
+  - Using either of these on **any** pin disables the Pi's PCM audio output globally.
+
+- Tone Out / Infrared Out
+  - Both of these use pigpio's wave interface, which only has a single instance. Calling either on **any** pin automatically stops any running instance that exists. Both features can co-exist in a script, but cannot happen at the same time.
+
+### Incompatible
+  - EEPROM (Use the filesystem for persistence instead)
+  - Analog IO (No analog pins on Raspberry Pi. Use ADC or DAC over I2C or SPI)
 
 ### To Be Implemented
   - OneWire
@@ -155,11 +166,3 @@ sudo pigpiod -s 10
   - BitBang SPI 
   - BitBang UART
   - WS2812
-
-### Differences
-  - Listeners are still polled in a thread, but always at 1ms.
-  - pigpio has very fast native input callbacks available, but events are not received in order on a global basis, only per pin. This creates issues where event order between pins is important (like a RotaryEncoder). May expose this functionality for SinglePin components later.
-
-### Incompatible
-  - EEPROM (Use the filesystem for persistence instead)
-  - Analog IO (No analog pins on Raspberry Pi. Use ADC or DAC over I2C or SPI)
