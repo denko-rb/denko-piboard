@@ -23,13 +23,13 @@ led = Denko::LED.new(board: board, pin: 4)
 # Momentary button connected to GPIO17, using internal pullup.
 button = Denko::DigitalIO::Button.new(board: board, pin: 17, pullup: true)
 
-# Led on when button is down (0)
+# Callback runs when button is down (0)
 button.down do
   puts "Button down"
   led.on
 end
 
-# Led is off when button is up (1)
+# Callback runs when button is up (1)
 button.up do
   puts "Button up"
   led.off
@@ -68,8 +68,13 @@ Pi-specific examples will be in this gem's [examples](examples) folder, but most
 
 ## Installation
 
-#### OS Requirements
-This is tested on DietPi and Raspberry Pi OS, both based on Debian 11 (Bullseye), with kernel version 6.1 or higher.
+#### System Requirements
+- Tested on a Pi Zero W and Pi 3B, but should work on others.
+- Tested on DietPi and Raspberry Pi OS, both based on Debian 11 (Bullseye), with kernel version 6.1 or higher.
+- Tested Ruby versions:
+  - Ruby 2.7.4 (incldued with OS)
+  - Ruby 3.2.2+YJIT
+  - TruffleRuby 22.3.1 :man_shrugging: (Not available on ARMv6 Pis: Zero W, Pi 1. Not recommended in general)
 
 #### Dependencies
 This gem depends on [pigpio](https://github.com/joan2937/pigpio), the [pigpio gem](https://github.com/nak1114/ruby-extension-pigpio) to provide Ruby bindings, and [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git).
@@ -80,7 +85,7 @@ sudo apt install pigpio libgpiod-dev
 ```
 
 #### 2. Install pigpio gem
-The `pigpio` gem has a couple bugs. Until fixes are merged, please install from [this fork](https://github.com/vickash/ruby-extension-pigpio):
+A bug in the current `pigpio` gem release prevents it from installing on Ruby 3.2+. You can safely ignore this step if using a lower Ruby version, or install it from [this fork](https://github.com/vickash/ruby-extension-pigpio) until fixes are merged and released:
 ```shell
 git clone https://github.com/denko-rb/ruby-extension-pigpio.git
 cd ruby-extension-pigpio
