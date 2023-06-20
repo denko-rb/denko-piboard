@@ -1,4 +1,4 @@
-module Dino
+module Denko
   class PiBoard
     # CMD = 10
     def servo_toggle(pin, value=:off, options={})

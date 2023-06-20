@@ -1,7 +1,7 @@
-require 'dino'
+require 'denko'
 require 'pigpio'
 
-module Dino
+module Denko
   class PiBoard
     include Pigpio::Constant
       
@@ -35,12 +35,12 @@ module Dino
       exit(-1) if @pi_handle < 0
       
       # Open the libgpiod interface too.
-      Dino::GPIOD.open_chip
+      Denko::GPIOD.open_chip
     end
 
     def finish_write
       Pigpio::IF.pigpio_stop(@pi_handle)
-      Dino::GPIOD.close_chip
+      Denko::GPIOD.close_chip
     end
 
     #

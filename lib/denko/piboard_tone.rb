@@ -1,4 +1,4 @@
-module Dino
+module Denko
   class PiBoard
     # CMD = 17
     def tone(pin, frequency, duration=nil)

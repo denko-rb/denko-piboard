@@ -163,8 +163,8 @@ static VALUE get_value_raw(VALUE self, VALUE gpio) {
 }
 
 void Init_gpiod(void) {
-  VALUE mDino  = rb_define_module("Dino");
-  VALUE mGPIOD = rb_define_module_under(mDino, "GPIOD");
+  VALUE mDenko  = rb_define_module("Denko");
+  VALUE mGPIOD = rb_define_module_under(mDenko, "GPIOD");
   rb_define_singleton_method(mGPIOD, "open_chip",        open_chip,        0);
   rb_define_singleton_method(mGPIOD, "close_chip",       close_chip,       0);
   rb_define_singleton_method(mGPIOD, "open_line_output", open_line_output, 1);

@@ -1,4 +1,4 @@
-module Dino
+module Denko
   class PiBoard
     MAP = {
       # Only use SPI1 interface.

@@ -1,9 +1,9 @@
-module Dino
+module Denko
   class PiBoard
     # CMD = 0
     def set_pin_mode(pin, mode=:input, glitch_time=nil)
       # Close the line in libgpiod, if was already open.
-      Dino::GPIOD.close_line(pin)
+      Denko::GPIOD.close_line(pin)
 
       pwm_clear(pin)
       gpio = get_gpio(pin)
@@ -13,7 +13,7 @@ module Dino
         gpio.mode = PI_OUTPUT
         
         # Use pigpiod for setup, but still open line in libgpiod.
-        Dino::GPIOD.open_line_output(pin)
+        Denko::GPIOD.open_line_output(pin)
 
       # Input
       else
@@ -35,20 +35,20 @@ module Dino
         end
         
         # Use pigpiod for setup, but still open line in libgpiod.
-        Dino::GPIOD.open_line_input(pin)
+        Denko::GPIOD.open_line_input(pin)
       end
     end
 
     # CMD = 1
     def digital_write(pin, value)
       pwm_clear(pin)
-      Dino::GPIOD.set_value(pin, value)
+      Denko::GPIOD.set_value(pin, value)
     end
     
     # CMD = 2
     def digital_read(pin)
       unless @pwms[pin]
-        state = Dino::GPIOD.get_value(pin)
+        state = Denko::GPIOD.get_value(pin)
         self.update(pin, state)
         return state
       end
@@ -104,7 +104,7 @@ module Dino
       @listen_mutex.synchronize do
         @pin_listeners |= [pin]
         @pin_listeners.sort!
-        @listen_states[pin] = Dino::GPIOD.get_value(pin)
+        @listen_states[pin] = Denko::GPIOD.get_value(pin)
       end
       start_listen_thread
     end
@@ -131,7 +131,7 @@ module Dino
         loop do
           @listen_mutex.synchronize do
             @pin_listeners.each do |pin|
-              @listen_reading = Dino::GPIOD.get_value(pin)
+              @listen_reading = Denko::GPIOD.get_value(pin)
               self.update(pin, @listen_reading) if (@listen_reading != @listen_states[pin])
               @listen_states[pin] = @listen_reading
             end

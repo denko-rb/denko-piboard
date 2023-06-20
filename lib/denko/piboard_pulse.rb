@@ -1,6 +1,6 @@
 require 'timeout'
 
-module Dino
+module Denko
   class PiBoard    
     def pulse_read(pin, reset: false, reset_time: 0, pulse_limit: 100, timeout: 200)
       # Validation
@@ -34,7 +34,7 @@ module Dino
       # If using reset pulse, do it, and the mode switch, while the callback is active.
       if reset
         set_pin_mode(pin, :output)
-        Dino::GPIOD.set_value(pin, reset)
+        Denko::GPIOD.set_value(pin, reset)
         sleep(reset_time / 1000000.0)
 
         # Set pull to opposite direction of reset.

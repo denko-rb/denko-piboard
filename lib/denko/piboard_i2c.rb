@@ -1,4 +1,4 @@
-module Dino
+module Denko
   class PiBoard
     # Maximum amount of bytes that can be read or written in a single I2C operation.
     def i2c_limit
@@ -88,11 +88,11 @@ module Dino
         read_bytes = Pigpio::IF.i2c_zip(pi_handle, i2c_handle, buffer.pack("C*"), read_length)
         i2c_close
 
-        # Pigpio returned an error. Dino expects blank message after address.
+        # Pigpio returned an error. Denko expects blank message after address.
         if read_bytes.class == Integer
           message = "#{address}-"
         else
-          # Format the bytes like dino expects from a microcontroller.
+          # Format the bytes like denko expects from a microcontroller.
           message = read_bytes.split("").map { |byte| byte.ord.to_s }.join(",")
           message = "#{address}-#{message}"
         end

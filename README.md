@@ -1,10 +1,10 @@
-# dino-piboard 0.13.0
+# denko-piboard 0.13.0
 
 ### Raspberry Pi GPIO in Ruby
 
-This gem adds support for the Raspberry Pi GPIO interface to the [`dino`](https://github.com/austinbv/dino) gem. Unlike the main gem, which requires an external microcontroller, this lets you to connect peripherals directly to the Pi.
+This gem adds support for the Raspberry Pi GPIO interface to the [`denko`](https://github.com/denko-rb/denko) gem. Unlike the main gem, which requires an external microcontroller, this lets you to connect peripherals directly to the Pi.
 
-`Dino::PiBoard` is a drop-in replacement for `Dino::Board`, which would represent a connected micrcontroller. Everything maps to the Pi's built-in GPIO pins instead.
+`Denko::PiBoard` is a drop-in replacement for `Denko::Board`, which would represent a connected micrcontroller. Everything maps to the Pi's built-in GPIO pins instead.
 
 **Note:** This is not for the Raspberry Pi Pico (W) / RP2040. That microcontroller works with the main gem.
 
@@ -12,16 +12,16 @@ This gem adds support for the Raspberry Pi GPIO interface to the [`dino`](https:
 Create a script, `led_button.rb`:
 
 ```ruby
-require 'dino/piboard'
+require 'denko/piboard'
 
 # Board instance for the Pi.
-board = Dino::PiBoard.new
+board = Denko::PiBoard.new
 
 # LED connected to GPIO4.
-led = Dino::LED.new(board: board, pin: 4)
+led = Denko::LED.new(board: board, pin: 4)
 
 # Momentary button connected to GPIO17, using internal pullup.
-button = Dino::DigitalIO::Button.new(board: board, pin: 17, pullup: true)
+button = Denko::DigitalIO::Button.new(board: board, pin: 17, pullup: true)
 
 # Led on when button is down (0)
 button.down do
@@ -44,21 +44,21 @@ Run it:
 ruby led_button.rb
 ```
 #### More Examples
-Some Pi-specific code is shown in this gem's [examples](examples) folder, but most examples are in the [main gem](https://github.com/austinbv/dino/tree/master/examples). They must be modified to work with the Pi's GPIO:
+Some Pi-specific code is shown in this gem's [examples](examples) folder, but most examples are in the [main gem](https://github.com/denko-rb/denko/tree/master/examples). They must be modified to work with the Pi's GPIO:
 
 1. Replace setup code:
   ```ruby
     # Replace this:
     require 'bundler/setup'
-    require 'dino'
+    require 'denko'
     # With this:
-    require 'dino/piboard'
+    require 'denko/piboard'
 
     # Replace this:
-    connection = Dino::Connection::Serial.new()
-    board = Dino::Board.new()
+    connection = Denko::Connection::Serial.new()
+    board = Denko::Board.new()
     # With this:
-    board = Dino::PiBoard.new
+    board = Denko::PiBoard.new
   ```
 
 2. Update GPIO/pin numbers as needed. Raspberry Pi pinouts can be found [here](https://pinout.xyz/).
@@ -82,24 +82,24 @@ gem build
 gem install ruby-extension-pigpio-0.1.11.gem
 ```
 
-#### 3. Install dino gem
-This gem is very new. It __will not__ work with the version of `dino` (0.11.3) currently available from RubyGems. Install the latest version (future 0.13.0) from the master branch instead:
+#### 3. Install denko gem
+This gem is very new. It __will not__ work with the version of `denko` (0.11.3) currently available from RubyGems. Install the latest version (future 0.13.0) from the master branch instead:
 ```shell
-git clone https://github.com/austinbv/dino.git
-cd dino
+git clone https://github.com/denko-rb/denko.git
+cd denko
 git submodule init
 git submodule update
 gem build
-gem install dino-0.13.0.gem
+gem install denko-0.13.0.gem
 ```
 
-#### 4. Install dino/piboard gem
+#### 4. Install denko/piboard gem
 Again, since this gem is so new, install from the latest master branch:
 ```shell
-git clone https://github.com/dino-rb/dino-piboard.git
-cd dino-piboard
+git clone https://github.com/denko-rb/denko-piboard.git
+cd denko-piboard
 gem build
-gem install dino-piboard-0.13.0.gem
+gem install denko-piboard-0.13.0.gem
 ```
 
 **Note:** `sudo` may be needed before `gem install` if using the preinstalled Ruby on a Raspberry Pi.

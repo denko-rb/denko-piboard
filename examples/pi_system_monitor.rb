@@ -9,16 +9,16 @@
 #
 # Each loop, the OLED refreshes, showing date, time, CPU usage and RAM usage.
 #
-require 'dino/piboard'
+require 'denko/piboard'
 
 # Special character that fills a 4x6 rectangle.
 # Used to make bar graphs for CPU and RAM usage.
 BAR_ELEMENT = [0x00, 0x7E, 0x7E, 0x7E, 0x00]
 
-board = Dino::PiBoard.new
-i2c = Dino::I2C::Bus.new(board: board, pin: :SDA)
+board = Denko::PiBoard.new
+i2c = Denko::I2C::Bus.new(board: board, pin: :SDA)
 
-oled = Dino::Display::SSD1306.new(bus: i2c, rotate: true)
+oled = Denko::Display::SSD1306.new(bus: i2c, rotate: true)
 canvas = oled.canvas
 
 # Only do this once since total RAM won't change.

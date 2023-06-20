@@ -1,4 +1,4 @@
-module Dino
+module Denko
   class PiBoard
 
     def spi_config(mode, bit_order)

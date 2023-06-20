@@ -1,4 +1,4 @@
-module Dino
+module Denko
   class PiBoard
     def infrared_emit(pin, frequency, pulses)
       # 32-bit mask where only the bit corresponding to the GPIO in use is set.
