@@ -157,6 +157,7 @@ module Denko
 
           # Target 1 millisecond.
           @listen_sleep = 0.001 - active_time_per_loop
+          @listen_sleep = 0 if @listen_sleep < 0
         end
       end
     end
