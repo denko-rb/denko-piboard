@@ -116,7 +116,7 @@ Depending on your Pi and OS, `libgpiod` may limit GPIO access. If this is the ca
 sudo usermod -a -G gpio $(whoami)
 ```
 
-#### Features
+#### Enable Features
 I2C, SPI and the hardware UART may be disabled on the Pi by default. Enable them with the built-in utility:
 ```shell
 # On Raspberry Pi OS:
