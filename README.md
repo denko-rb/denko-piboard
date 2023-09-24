@@ -64,7 +64,7 @@ Pi-specific examples are in this gem's [examples](examples) folder, but examples
 #### Hardware
 
 :green_heart: Support verified
-:question: Should work. Unverified Not verified
+:question: Should work, but not verified
 
 |    Chip        | Status          | Products              | Notes |
 | :--------      | :------:        | :---------------      |------ |
@@ -79,6 +79,7 @@ Pi-specific examples are in this gem's [examples](examples) folder, but examples
 - Operating Systems:
   - Raspberry Pi OS
   - DietPi
+  
   Note: Both with kernel version 6.1 or higher.
 
 - Rubies:
