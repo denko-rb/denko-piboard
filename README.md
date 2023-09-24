@@ -9,8 +9,6 @@ This gem adds support for the Raspberry Pi GPIO interface to the [`denko`](https
 **Note:** This is not for the Raspberry Pi Pico (W) / RP2040. That microcontroller works with the main gem.
 
 ## Example
-Create a script, `led_button.rb`:
-
 ```ruby
 require 'denko/piboard'
 
@@ -39,13 +37,8 @@ end
 sleep
 ```
 
-Run it:
-```shell
-ruby led_button.rb
-```
-
 #### More Examples
-Pi-specific examples will be in this gem's [examples](examples) folder, but most examples are in the [main gem](https://github.com/denko-rb/denko/tree/master/examples). They must be modified to work with the Pi's GPIO:
+Pi-specific examples are in this gem's [examples](examples) folder, but examples from the [main gem](https://github.com/denko-rb/denko/tree/master/examples) can be modified to work on the Pi:
 
 1. Replace setup code:
   ```ruby
@@ -66,18 +59,41 @@ Pi-specific examples will be in this gem's [examples](examples) folder, but most
   
 **Note:** Not all features from all examples are implemented yet, nor can be implemented. See [Features](#features) below.
 
-## Installation
+## Support
 
-#### System Requirements
-- Tested on a Pi Zero W and Pi 3B, but should work on others.
-- Tested on DietPi and Raspberry Pi OS, both based on Debian 11 (Bullseye), with kernel version 6.1 or higher.
-- Tested Ruby versions:
-  - Ruby 2.7.4 (incldued with OS)
-  - Ruby 3.2.2+YJIT
+#### Hardware
+
+:green_heart: Support verified
+:question: Should work. Unverified Not verified
+
+|    Chip        | Status          | Products              | Notes |
+| :--------      | :------:        | :---------------      |------ |
+| BCM2835        | :green_heart:   | Pi 1, Pi Zero (W)     |
+| BCM2836/7      | :question:      | Pi 2                  |
+| BCM2837A0/B0   | :green_heart:   | Pi 3                  |
+| BCM2711        | :green_heart:   | Pi 4, Pi 400          |
+| BCM2710A1      | :question:      | Pi Zero 2W            |
+
+#### Software
+
+- Operating Systems:
+  - Raspberry Pi OS
+  - DietPi
+  Note: Both with kernel version 6.1 or higher.
+
+- Rubies:
+  - Ruby 2.7.4 (system Ruby on some Raspberry Pi OS installs)
+  - Ruby 3.2.2 (with and without YJIT)
   - TruffleRuby 22.3.1 :man_shrugging: (Not available on ARMv6 Pis: Zero W, Pi 1. Not recommended in general)
 
 #### Dependencies
-This gem depends on [pigpio](https://github.com/joan2937/pigpio), the [pigpio gem](https://github.com/nak1114/ruby-extension-pigpio) to provide Ruby bindings, and [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git).
+
+- [pigpio](https://github.com/joan2937/pigpio)
+- [libgpiod](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git)
+- [pigpio gem](https://github.com/nak1114/ruby-extension-pigpio) (Ruby bindings for pigpio)
+- [denko](https://github.com/denko-rb/denko) (peripheral implementations from main gem)
+
+## Installation
 
 #### 1. Install pigpio and libgpiod packages
 ```shell
@@ -85,12 +101,12 @@ sudo apt install pigpio libgpiod-dev
 ```
 
 #### 2. Install pigpio gem
-A bug in the current `pigpio` gem release prevents it from installing on Ruby 3.2+. You can safely ignore this step if using a lower Ruby version, or install it from [this fork](https://github.com/vickash/ruby-extension-pigpio) until fixes are merged and released:
+A bug in the current `pigpio` gem release prevents it from installing on Ruby 3.2+. You can safely ignore this step if using a lower Ruby version, or install it from [this fork](https://github.com/denko-rb/ruby-extension-pigpio) until fixes are merged and released:
 ```shell
 git clone https://github.com/denko-rb/ruby-extension-pigpio.git
 cd ruby-extension-pigpio
 gem build
-gem install ruby-extension-pigpio-0.1.11.gem
+gem install pigpio*.gem
 ```
 
 #### 3. Install denko-piboard gem
@@ -99,19 +115,19 @@ gem install denko-piboard
 ```
 This will automatically install the main `denko` gem and any other dependencies.
 
-**Note:** `sudo` may be needed before `gem install` if using the preinstalled Ruby on a Pi.
+**Note:** `sudo` may be needed before `gem install` if using the Pi's system ruby.
 
 ## Pi Setup
 
 #### pigpiod
-The `pigpio` package installs `pigpiod`, which needs to be running in the background as root for Ruby scripts to work. You should only need to start it once per boot. Automate it, or start manually with:
+The `pigpio` package installs `pigpiod`, which must run in the background (as root) for Ruby scripts to work. You should only need to start it once per boot. Automate it, or start manually with:
 ```shell
 sudo pigpiod -s 10
 ```
 **Note:** `-s 10` sets tick interval to 10 microseconds, lowering CPU use. Valid values are: 1, 2, 4, 5, 8, 10 (5 default).
 
 #### libgpiod
-Depending on your Pi and OS, `libgpiod` may limit GPIO access. If this is the case, some scripts will fail with a `libgpiod` error. It is only used for low-level digital read/write operations, so check using a simple script like blinking an LED. To get `libgpiod` permission, add your user account to the `gpio` group:
+Depending on your Pi and OS, `libgpiod` may limit GPIO access. If this happens, some scripts will fail. It is only used for digital read/write operations, so test with a simple script like blinking an LED. To get permission, add your user account to the `gpio` group:
 ```
 sudo usermod -a -G gpio $(whoami)
 ```
