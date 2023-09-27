@@ -101,20 +101,11 @@ Pi-specific examples are in this gem's [examples](examples) folder, but examples
 sudo apt install pigpio libgpiod-dev
 ```
 
-#### 2. Install pigpio gem
-A bug in the current `pigpio` gem release prevents it from installing on Ruby 3.2+. You can safely ignore this step if using a lower Ruby version, or install it from [this fork](https://github.com/denko-rb/ruby-extension-pigpio) until fixes are merged and released:
-```shell
-git clone https://github.com/denko-rb/ruby-extension-pigpio.git
-cd ruby-extension-pigpio
-gem build
-gem install pigpio*.gem
-```
-
-#### 3. Install denko-piboard gem
+#### 2. Install denko-piboard gem
 ```shell
 gem install denko-piboard
 ```
-This will automatically install the main `denko` gem and any other dependencies.
+This automatically installs dependency gems: `denko` and `pigpio`.
 
 **Note:** `sudo` may be needed before `gem install` if using the Pi's system ruby.
 
