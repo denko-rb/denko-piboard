@@ -1,4 +1,4 @@
-# denko-piboard 0.13.1
+# denko-piboard 0.13.2
 
 ### Raspberry Pi GPIO in Ruby
 
