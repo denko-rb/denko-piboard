@@ -35,7 +35,7 @@ module Denko
     # CMD = 2
     def digital_read(pin)
       state = LGPIO.gpio_read(@gpio_handle, pin)
-      self.update(state)
+      self.update(pin, state)
       return state
     end
     
@@ -67,20 +67,20 @@ module Denko
         raise ArgumentError, "error in state: #{options[:state]}. Should be one of: [:on, :off]"
       end
       
-      if state == :on      
-        LGPIO.gpio_claim_alert(@gpio_handle, 0, LGPIO::BOTH_EDGES, pin)
-      else
-        # Only way to stop getting alerts is to free the GPIO.
-        LGPIO.gpio_free(@gpio_handle, pin)
-        
-        # Pin was previously claimed as input, so reclaim with same config.
-        config = @pin_configs[pin]
-        if config
-          set_pin_mode(pin, config[:mode], glitch_time: config[:glitch_time])
-        end
+      # Only way to stop getting alerts is to free the GPIO.
+      LGPIO.gpio_free(@gpio_handle, pin)
+      
+      # Reclaim it as input if needed.
+      config   = @pin_configs[pin]
+      config ||= { mode: :input, glitch_time: nil } if state == :on
+      if config
+        set_pin_mode(pin, config[:mode], glitch_time: config[:glitch_time])
       end
       
-      start_alert_thread unless @alert_thread
+      if state == :on
+        LGPIO.gpio_claim_alert(@gpio_handle, 0, LGPIO::BOTH_EDGES, pin)
+        start_alert_thread unless @alert_thread
+      end
     end
 
     def digital_listen(pin, divider=4)

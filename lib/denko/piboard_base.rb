@@ -1,4 +1,5 @@
 require 'denko'
+require 'lgpio'
 
 module Denko
   class PiBoard
@@ -34,7 +35,7 @@ module Denko
     #
     include Behaviors::Subcomponents
 
-    def update(pin, message, time=nil)
+    def update(pin, message)
       if single_pin_components[pin]
         single_pin_components[pin].update(message)
       end
