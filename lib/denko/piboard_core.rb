@@ -20,12 +20,13 @@ module Denko
       end
       
       # Cache these in case another method needs to reset the pin.
-      @pin_configs[pin] = @pin_configs[pin].merge(mode: mode)
+      @pin_configs[pin] = @pin_configs[pin].to_h.merge(mode: mode)
     end
 
     def set_pin_debounce(pin, debounce_time)
+      return unless debounce_time
       LGPIO.gpio_set_debounce(@gpio_handle, pin, debounce_time)
-      @pin_configs[pin] = @pin_configs[pin].merge(debounce_time: debounce_time)
+      @pin_configs[pin] = @pin_configs[pin].to_h.merge(debounce_time: debounce_time)
     end
 
     # CMD = 1
