@@ -1,95 +1,86 @@
 module Denko
   class PiBoard
     # CMD = 0
-    def set_pin_mode(pin, mode=:input, glitch_time=nil)
-      # Close the line in libgpiod, if was already open.
-      Denko::GPIOD.close_line(pin)
-
-      pwm_clear(pin)
-      gpio = get_gpio(pin)
-
-      # Output
+    def set_pin_mode(pin, mode=:input, glitch_time:nil)
+      LGPIO.gpio_free(@gpio_handle, pin)
+      
       if mode.to_s.match /output/
-        gpio.mode = PI_OUTPUT
-        
-        # Use pigpiod for setup, but still open line in libgpiod.
-        Denko::GPIOD.open_line_output(pin)
-
-      # Input
+        LGPIO.gpio_claim_output(@gpio_handle, LGPIO::SET_PULL_NONE, pin, LOW)
       else
-        gpio.mode = PI_INPUT
+        # Determine pull direction
+        pull = LGPIO::SET_PULL_NONE
 
-        # State change valid only if steady for this many microseconds.
-        # Only applies to callbacks hooked through pigpiod.
-        if glitch_time
-          gpio.glitch_filter(glitch_time)
-        end
-
-        # Pull down/up/none
         if mode.to_s.match /pulldown/
-          gpio.pud = PI_PUD_DOWN
+          pull = LGPIO::SET_PULL_DOWN
         elsif mode.to_s.match /pullup/
-          gpio.pud = PI_PUD_UP
-        else
-          gpio.pud = PI_PUD_OFF
+          pull = LGPIO::SET_PULL_UP
         end
         
-        # Use pigpiod for setup, but still open line in libgpiod.
-        Denko::GPIOD.open_line_input(pin)
+        LGPIO.gpio_claim_input(@gpio_handle, pull, pin)
       end
+      
+      if glitch_time
+        LGPIO.gpio_set_debounce(@gpio_handle, pin, glitch_time)
+      end
+      
+      # Cache these in case another method needs to reset the pin.
+      @pin_configs[pin] = { mode: mode, glitch_time: glitch_time }
     end
 
     # CMD = 1
     def digital_write(pin, value)
-      pwm_clear(pin)
-      Denko::GPIOD.set_value(pin, value)
+      LGPIO.gpio_write(@gpio_handle, pin, value)
     end
     
     # CMD = 2
     def digital_read(pin)
-      unless @pwms[pin]
-        state = Denko::GPIOD.get_value(pin)
-        self.update(pin, state)
-        return state
-      end
+      state = LGPIO.gpio_read(@gpio_handle, pin)
+      self.update(state)
+      return state
     end
     
     # CMD = 3
-    def pwm_write(pin, value)
-      # Disable servo if necessary.
-      pwm_clear(pin) if @pwms[pin] == :servo
-
-      unless @pwms[pin]
-        @pwms[pin] = get_gpio(pin).pwm
-        @pwms[pin].frequency = 1000
-      end
-      @pwms[pin].dutycycle = value
+    def pwm_write(pin, duty)
+      LGPIO.tx_pwm(@gpio_handle, pin, 1000, duty, 0, 0)
     end
-
-    # PiGPIO native callbacks. Unused now.
-    def set_alert(pin, state=:off, options={})
-      # Listener on
-      if state == :on && !@pin_callbacks[pin]
-        callback = get_gpio(pin).callback(EITHER_EDGE) do |tick, level, pin_cb|
-          update(pin_cb, level, tick)
-        end
-        @pin_callbacks[pin] = callback
-
-      # Listener off
-      else
-        @pin_callbacks[pin].cancel if @pin_callbacks[pin]
-        @pin_callbacks[pin] = nil
-      end
+    
+    # CMD = 4
+    def dac_write(pin, value)
+      raise "PiBoard#dac_write not implemented"
+    end
+    
+    # CMD = 5
+    def analog_read(pin, negative_pin=nil, gain=nil, sample_rate=nil)
+      raise "PiBoard#analog_read not implemented"
     end
 
     # CMD = 6
     def set_listener(pin, state=:off, options={})
-      # Listener on
-      if state == :on && !@pin_listeners.include?(pin)
-        add_listener(pin)
-      else
-        remove_listener(pin)
+      # Validate listener is digital only.
+      options[:mode] ||= :digital
+      unless options[:mode] == :digital
+        raise ArgumentError, "error in mode: #{options[:mode]}. Should be one of: [:digital]"
       end
+      
+      # Validate state.
+      unless (state == :on) || (state == :off) 
+        raise ArgumentError, "error in state: #{options[:state]}. Should be one of: [:on, :off]"
+      end
+      
+      if state == :on      
+        LGPIO.gpio_claim_alert(@gpio_handle, 0, LGPIO::BOTH_EDGES, pin)
+      else
+        # Only way to stop getting alerts is to free the GPIO.
+        LGPIO.gpio_free(@gpio_handle, pin)
+        
+        # Pin was previously claimed as input, so reclaim with same config.
+        config = @pin_configs[pin]
+        if config
+          set_pin_mode(pin, config[:mode], glitch_time: config[:glitch_time])
+        end
+      end
+      
+      start_alert_thread unless @alert_thread
     end
 
     def digital_listen(pin, divider=4)
@@ -100,73 +91,29 @@ module Denko
       set_listener(pin, :off)
     end
 
-    def add_listener(pin)
-      @listen_mutex.synchronize do
-        @pin_listeners |= [pin]
-        @pin_listeners.sort!
-        @listen_states[pin] = Denko::GPIOD.get_value(pin)
-      end
-      start_listen_thread
+    def start_gpio_reports
+      return if @reporting_started
+      LGPIO.gpio_start_reporting
+      @reporting_started = true
     end
-    
-    def remove_listener(pin)
-      @listen_mutex.synchronize do
-        @pin_listeners.delete(pin)
-        @listen_states[pin] = nil
-      end
-    end
-    
-    def start_listen_thread
-      return if @listen_thread
-      
-      @listen_thread = Thread.new do
-        #
-        # @listen_monitor_thread will adjust sleep time dyanmically,
-        # targeting even timing of 1 millisecond between loops.
-        #
-        @listen_count = 0
-        @listen_sleep = 0.001
-        start_time = Time.now
 
+    def start_alert_thread
+      start_gpio_reports
+      @alert_thread = Thread.new do
         loop do
-          @listen_mutex.synchronize do
-            @pin_listeners.each do |pin|
-              @listen_reading = Denko::GPIOD.get_value(pin)
-              self.update(pin, @listen_reading) if (@listen_reading != @listen_states[pin])
-              @listen_states[pin] = @listen_reading
-            end
+          report = LGPIO.gpio_get_report
+          if report
+            update(report[:gpio], report[:level])
+          else
+            sleep 0.001
           end
-          @listen_count += 1
-          sleep(@listen_sleep)
-        end
-      end
-
-      @listen_monitor_thread = Thread.new do
-        loop do
-          # Sample the listen rate over 5 seconds.
-          time1  = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-          count1 = @listen_count
-          sleep(5)
-          time2  = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-          count2 = @listen_count
-          
-          # Quick maths.
-          loops = count2 - count1
-          time  = time2 - time1
-          active_time_per_loop = (time - (loops * @listen_sleep)) / loops
-
-          # Target 1 millisecond.
-          @listen_sleep = 0.001 - active_time_per_loop
-          @listen_sleep = 0 if @listen_sleep < 0
         end
       end
     end
     
-    def stop_listen_thread
-      @listen_monitor_thread.kill
-      @listen_monitor_thread = nil
-      @listen_thread.kill
-      @listen_thread = nil
+    def stop_alert_thread
+      Thread.kill(@alert_thread) if @alert_thread
+      @alert_thread = nil
     end
   end
 end
