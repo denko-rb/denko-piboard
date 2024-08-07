@@ -1,7 +1,7 @@
 module Denko
   class PiBoard
     # CMD = 0
-    def set_pin_mode(pin, mode=:input, glitch_time:nil)
+    def set_pin_mode(pin, mode=:input)
       LGPIO.gpio_free(@gpio_handle, pin)
       
       if mode.to_s.match /output/
@@ -19,12 +19,13 @@ module Denko
         LGPIO.gpio_claim_input(@gpio_handle, pull, pin)
       end
       
-      if glitch_time
-        LGPIO.gpio_set_debounce(@gpio_handle, pin, glitch_time)
-      end
-      
       # Cache these in case another method needs to reset the pin.
-      @pin_configs[pin] = { mode: mode, glitch_time: glitch_time }
+      @pin_configs[pin] = @pin_configs[pin].merge(mode: mode)
+    end
+
+    def set_pin_debounce(pin, debounce_time)
+      LGPIO.gpio_set_debounce(@gpio_handle, pin, debounce_time)
+      @pin_configs[pin] = @pin_configs[pin].merge(debounce_time: debounce_time)
     end
 
     # CMD = 1
@@ -74,7 +75,8 @@ module Denko
       config   = @pin_configs[pin]
       config ||= { mode: :input, glitch_time: nil } if state == :on
       if config
-        set_pin_mode(pin, config[:mode], glitch_time: config[:glitch_time])
+        set_pin_mode(pin, config[:mode])
+        set_pin_debounce(pin, config[:debounce_time])
       end
       
       if state == :on
