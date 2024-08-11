@@ -1,7 +1,7 @@
 require 'denko'
 require 'denko/piboard'
 
-board = Denko::PiBoard.new i2c_devices: [{sda: 264, index: 3}]
+board = Denko::PiBoard.new i2c_devices: [{index: 3, sda: 264}]
 bus = Denko::I2C::Bus.new(board: board, pin: 264)
 
 bus.search

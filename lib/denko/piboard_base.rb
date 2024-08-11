@@ -23,7 +23,7 @@ module Denko
 
       @spi_devs = [spi_devices].flatten.compact
       @spi_devs.each do |dev|
-        raise ArgumentError, "invalid Integer pin for miso: in spi_device: #{dev}" if dev[:miso].class != Integer
+        raise ArgumentError, "invalid Integer pin for cs0: in spi_device: #{dev}" if dev[:cs0].class != Integer
         raise ArgumentError, "invalid Integer for index: in spi_device: #{dev}" if dev[:index].class != Integer
       end
 
