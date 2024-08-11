@@ -14,5 +14,5 @@ Gem::Specification.new do |s|
   s.metadata    = { "source_code_uri" => "https://github.com/denko-rb/denko-piboard" }
   
   s.add_dependency 'lgpio',  '~> 0.1'
-  s.add_dependency 'denko',  '~> 0.13'
+  s.add_dependency 'denko',  '~> 0.14'
 end

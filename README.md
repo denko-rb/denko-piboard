@@ -1,6 +1,6 @@
-# denko-piboard 0.13.2
+# denko-piboard 0.14.0
 
-### Raspberry Pi GPIO in Ruby
+### SBC GPIO in Ruby
 
 This gem adds support for the Raspberry Pi GPIO interface to the [`denko`](https://github.com/denko-rb/denko) gem. Unlike the main gem, which requires an external microcontroller, this lets you to connect peripherals directly to the Pi.
 

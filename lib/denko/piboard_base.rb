@@ -11,17 +11,29 @@ module Denko
     def pwm_high; PWM_HIGH; end
 
     def initialize(gpio_chip: 0, i2c_devices: nil, spi_devices: nil)
+      # Validate GPIO, I2C and SPI devices.
       @gpio_dev = gpio_chip
-      @i2c_devs = [i2c_devices].flatten.compact
-      @spi_devs = [spi_devices].flatten.compact
+      raise ArgumentError, "invalid gpio_chip: #{@gpio_dev} given. Must be Integer" if @gpio_dev.class != Integer
 
-      # Config state for each pin.
+      @i2c_devs = [i2c_devices].flatten.compact
+      @i2c_devs.each do |dev|
+        raise ArgumentError, "invalid Integer pin for sda: in i2c_device: #{dev}" if dev[:sda].class != Integer
+        raise ArgumentError, "invalid Integer for index: in i2c_device: #{dev}" if dev[:index].class != Integer
+      end
+
+      @spi_devs = [spi_devices].flatten.compact
+      @spi_devs.each do |dev|
+        raise ArgumentError, "invalid Integer pin for miso: in spi_device: #{dev}" if dev[:miso].class != Integer
+        raise ArgumentError, "invalid Integer for index: in spi_device: #{dev}" if dev[:index].class != Integer
+      end
+
+      # Config state storage for pins.
       @pin_configs = []
 
       # This thread will receive alerts from the LGPIO process and call #update.
       @alert_thread = nil
       @reporting_started = false
-      
+
       # Immediately open the GPIO device
       @gpio_handle = LGPIO.chip_open(@gpio_dev)
     end
