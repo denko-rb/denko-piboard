@@ -138,34 +138,29 @@ For Raspberry Pi SBCs, running Raspberry Pi OS, `sudo raspi-config` should have 
 By default, only the `root` user might have access to GPIO, I2C and SPI devices. If you don't want to run your Ruby scripts as `root`, [this section](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-6-get-permission) of my Orange Pi Zero 2W setup tutorial is broadly applicable. It should give your user permissions, regardless of SBC or Linux distro in use.
 
 ## Features
-
-### Already Implemented
-  - Internal Pull Down/Up
-  - Digital Out
-  - Digital In
-    - Unlike the main gem, where the microcontroller polls pins as fast as every 1ms, we take advantage of `lg`'s alert feature, which reads them much faster.
-  - PWM Out (software timed)
-  - I2C
-    - Limited to 1 interface
-
-### Partially Implemented
+- Internal Pull Down/Up
+- Digital Out
+- Digital In
+  - Unlike the main gem, where the microcontroller polls pins as fast as every 1ms, `lgpio`'s alert feature reads them much faster.
+- PWM Out (software timed, any pin)
+- Tone Out (software timed, any pin)
+- Servo (requires hardware PWM pin)
+- Infrared Out (requires hardware PWM pin)
+- I2C
+  - Limited to 1 interface
 - SPI
   - Limited to 1 interface
   - You should always setup the SPI interface to bind the `CE0` pin, and no others. Since these bindings cannot be changed without rebooting, this gem is written so it will use `CE0` if you give the corresponding GPIO number as your enable pin, but separately toggle any other GPIO to function as your enable pin, if needed. This way you bind the fewest pins possible to the SPI device, and leave them free for any use.
-  - No listeners yet
+  - No listeners
 
 ### To Be Implemented
-  - Servo (software timed)
-  - Tone Out (software timed)
-  - Infrared Out (software timed)
-  - DHT Class Temperature + Humidity Sensors (bit banged)
-  - OneWire (bit banged)
-  - BitBang I2C
-  - BitBang SPI
-  - WS2812 (over SPI only)
-  - UART
+- DHT Class Temperature + Humidity Sensors (bit banged)
+- OneWire (bit banged)
+- BitBang I2C
+- BitBang SPI
+- WS2812 (over SPI only)
+- UART
 
 ### Incompatible
-  - EEPROM (Use the filesystem for persistence instead)
-  - Analog IO (No ADCs or DACs integrated into these SBCSs. Use extenal ADC or DAC over I2C or SPI)
-  - Hardware PWM (Some SBCs have PWM hardware, but no Linux driver yet)
+- EEPROM (Use the filesystem for persistence instead)
+- Analog IO (No ADCs or DACs integrated into these SBCSs. Use extenal ADC or DAC over I2C or SPI)

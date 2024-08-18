@@ -16,7 +16,7 @@ require 'denko/piboard'
 BAR_ELEMENT = [0x00, 0x7E, 0x7E, 0x7E, 0x00]
 
 board = Denko::PiBoard.new i2c_devices: [{index: 3, sda: 264}]
-i2c = Denko::I2C::Bus.new(board: board, pin: :SDA)
+i2c = Denko::I2C::Bus.new(board: board, pin: 264)
 
 oled = Denko::Display::SSD1306.new(bus: i2c, rotate: true)
 canvas = oled.canvas
