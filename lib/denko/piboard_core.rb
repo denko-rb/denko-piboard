@@ -2,6 +2,9 @@ module Denko
   class PiBoard
     # CMD = 0
     def set_pin_mode(pin, mode=:input)
+      # Ignore for GPIOs with hardware PWM enabled. Can't use them as GPIO on Linux anyway.
+      return unless pwm_chip_and_channel_from_pin(pin).compact.empty?
+
       LGPIO.gpio_free(@gpio_handle, pin)
 
       if mode.to_s.match /output/
