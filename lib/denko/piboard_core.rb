@@ -2,9 +2,13 @@ module Denko
   class PiBoard
     # CMD = 0
     def set_pin_mode(pin, mode=:input)
-      # Ignore for GPIOs with hardware PWM enabled. Can't use them as GPIO on Linux anyway.
-      return unless pwm_chip_and_channel_from_pin(pin).compact.empty?
+      # If given a hardware PWM pin, only allow it to be used for output.
+      unless pwm_chip_and_channel_from_pin(pin).compact.empty?
+        return pwm_instance_from_pin(pin) if (mode.to_s.match /output/)
+        raise "GPIO #{pin}, with hardware PWM, cannot be used for input"
+      end
 
+      # Use LGPIO if no hardware PWM.
       LGPIO.gpio_free(@gpio_handle, pin)
 
       if mode.to_s.match /output/
@@ -12,7 +16,6 @@ module Denko
       else
         # Determine pull direction
         pull = LGPIO::SET_PULL_NONE
-
         if mode.to_s.match /pulldown/
           pull = LGPIO::SET_PULL_DOWN
         elsif mode.to_s.match /pullup/
@@ -29,7 +32,8 @@ module Denko
 
     def set_pin_debounce(pin, debounce_time)
       return unless debounce_time
-      LGPIO.gpio_set_debounce(@gpio_handle, pin, debounce_time)
+      result = LGPIO.gpio_set_debounce(@gpio_handle, pin, debounce_time)
+      raise "could not set debounce for GPIO #{pin}. LGPIO error: #{result}" if result < 0
       @pin_configs[pin] = @pin_configs[pin].to_h.merge(debounce_time: debounce_time)
     end
 
@@ -44,6 +48,7 @@ module Denko
 
     # CMD = 2
     def digital_read(pin)
+      return @hardware_pwms[pin].duty_percent if @hardware_pwms[pin]
       state = LGPIO.gpio_read(@gpio_handle, pin)
       self.update(pin, state)
       return state
@@ -52,7 +57,7 @@ module Denko
     # CMD = 3
     def pwm_write(pin, duty)
       if @hardware_pwms[pin]
-        @hardware_pwms[pin].frequency = 1000
+        @hardware_pwms[pin].frequency    = 1000
         @hardware_pwms[pin].duty_percent = duty
       else
         LGPIO.tx_pwm(@gpio_handle, pin, 1000, duty, 0, 0)

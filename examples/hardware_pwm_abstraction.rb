@@ -15,7 +15,7 @@ OPI_ZERO2W_PWMS = [
   }
 ]
 
-board = Denko::PiBoard.new
+board = Denko::PiBoard.new(pwm_chips: OPI_ZERO2W_PWMS)
 led = Denko::LED.new(board: board, pin: 226)
 
 5.times do
