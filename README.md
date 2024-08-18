@@ -123,7 +123,7 @@ This automatically installs dependency gems: `denko` and `lgpio`.
 ## Hardware Setup
 
 #### Enable I2C and SPI Devices
-I2C, and SPI may be disabled on the SBC by default. This varies by chip manufacturer and Linux distribution. You will need to figure out how to enable them on your machine.
+I2C and SPI may be disabled on the SBC by default. This varies by chip manufacturer and Linux distribution. You will need to figure out how to enable them on your machine.
 
 For the Orange Pi Zero 2W specifically, running DietPi, I wrote a guide [here](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-5-enable-i2c-and-spi).
 
