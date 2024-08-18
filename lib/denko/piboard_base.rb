@@ -10,10 +10,20 @@ module Denko
     def high;     HIGH;     end
     def pwm_high; PWM_HIGH; end
 
-    def initialize(gpio_chip: 0, i2c_devices: nil, spi_devices: nil)
+    def initialize(gpio_chip: 0, i2c_devices: nil, spi_devices: nil, pwm_chips: nil)
       # Validate GPIO, I2C and SPI devices.
       @gpio_dev = gpio_chip
       raise ArgumentError, "invalid gpio_chip: #{@gpio_dev} given. Must be Integer" if @gpio_dev.class != Integer
+
+      @pwm_chips = [pwm_chips].flatten.compact
+      @pwm_chips.each do |chip|
+        raise ArgumentError, "invalid Integer for index: in pwm_chip: #{chip}" if chip[:index].class != Integer
+        chip[:gpios].each_pair do |gpio, chan|
+          raise ArgumentError, "invalid Integer: #{gpio} in keys (GPIOs) of pwm_chip#{chip}" if gpio.class != Integer
+          raise ArgumentError, "invalid Integer: #{chan} in values (channels) of pwm_chip#{chip}" if chan.class != Integer
+        end
+      end
+      @hardware_pwms = {}
 
       @i2c_devs = [i2c_devices].flatten.compact
       @i2c_devs.each do |dev|

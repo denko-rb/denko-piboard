@@ -45,5 +45,13 @@ module Denko
         raise ArgumentError, "error in pin: #{pin.inspect}"
       end
     end
+
+    def gpio_to_pwm_channel(gpio)
+      @pwm_chips.each do |chip|
+        channel = chip[:gpios][gpio]
+        return [chip[:index], channel] if channel
+      end
+      return [nil, nil]
+    end
   end
 end
