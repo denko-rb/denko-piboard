@@ -35,7 +35,11 @@ module Denko
 
     # CMD = 1
     def digital_write(pin, value)
-      LGPIO.gpio_write(@gpio_handle, pin, value)
+      if @hardware_pwms[pin]
+        @hardware_pwms[pin].duty_percent = (value == 0) ? 0 : 100
+      else
+        LGPIO.gpio_write(@gpio_handle, pin, value)
+      end
     end
 
     # CMD = 2
@@ -47,7 +51,12 @@ module Denko
 
     # CMD = 3
     def pwm_write(pin, duty)
-      LGPIO.tx_pwm(@gpio_handle, pin, 1000, duty, 0, 0)
+      if @hardware_pwms[pin]
+        @hardware_pwms[pin].frequency = 1000
+        @hardware_pwms[pin].duty_percent = duty
+      else
+        LGPIO.tx_pwm(@gpio_handle, pin, 1000, duty, 0, 0)
+      end
     end
 
     # CMD = 4
