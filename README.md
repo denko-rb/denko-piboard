@@ -152,9 +152,10 @@ By default, only the `root` user might have access to GPIO, I2C and SPI devices.
   - Limited to 1 interface
   - You should always setup the SPI interface to bind the `CE0` pin, and no others. Since these bindings cannot be changed without rebooting, this gem is written so it will use `CE0` if you give the corresponding GPIO number as your enable pin, but separately toggle any other GPIO to function as your enable pin, if needed. This way you bind the fewest pins possible to the SPI device, and leave them free for any use.
   - No listeners
+- Pulse Sequence Input (for DHT-class temperature + humidity sensors)
 
 ### To Be Implemented
-- DHT Class Temperature + Humidity Sensors (bit banged)
+- Single Pulse Input (used for HC-SR04 sensor)
 - OneWire (bit banged)
 - BitBang I2C
 - BitBang SPI

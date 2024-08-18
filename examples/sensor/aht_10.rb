@@ -1,4 +1,6 @@
-require 'denko'
+#
+# Example using AHT10 sensor over I2C, for temperature and humidity.
+#
 require 'denko/piboard'
 
 board = Denko::PiBoard.new i2c_devices: [{index: 3, sda: 264}]

@@ -3,11 +3,10 @@
 # (Linux SBC), compared to a Board instance (USB attached microcontroller),
 # but still won't be perfect.
 #
-require 'denko'
 require 'denko/piboard'
 
-PIN_A     = 76
-PIN_B     = 228
+PIN_A     = 260
+PIN_B     = 76
 
 board = Denko::PiBoard.new
 encoder = Denko::DigitalIO::RotaryEncoder.new board: board,
