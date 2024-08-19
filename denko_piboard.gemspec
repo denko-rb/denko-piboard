@@ -16,6 +16,6 @@ Gem::Specification.new do |s|
   # libgpio C extension
   s.extensions = %w[ext/gpiod/extconf.rb]
 
-  s.add_dependency 'pigpio', '~> 0.1'
+  s.add_dependency 'pigpio', '~> 0.1.12'
   s.add_dependency 'denko',  '~> 0.13'
 end

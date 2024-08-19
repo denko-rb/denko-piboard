@@ -21,9 +21,18 @@ i2c = Denko::I2C::Bus.new(board: board, pin: :SDA)
 oled = Denko::Display::SSD1306.new(bus: i2c, rotate: true)
 canvas = oled.canvas
 
+# Helper to convert free output to nearest integer in MiB units.
+def ram_integer_from_string(string)
+  if string.match("Gi")
+    return (string.gsub("Gi", "").to_f * 1024).round
+  else
+    return string.gsub("Mi", "").to_i
+  end
+end
+
 # Only do this once since total RAM won't change.
-total_ram = `free -h | awk 'NR==2 {gsub("Mi", "", $2); print $2}'`
-total_ram = total_ram.to_i
+total_ram_string = `free -h | awk 'NR==2 {print $2}'`
+total_ram = ram_integer_from_string(total_ram_string)
 ram_bar_factor = total_ram / 25.0
 
 loop do
@@ -39,11 +48,11 @@ loop do
   (cpu_percent / 4).ceil.times { canvas.raw_char(BAR_ELEMENT) }
   
   # RAM Usage
-  ram_usage = `free -h | awk 'NR==2 {gsub("Mi", "", $3); print $3}'`
-  ram_usage = ram_usage.to_i
+  ram_string = `free -h | awk 'NR==2 {print $3}'`
+  ram_usage = ram_string.to_i
 
   canvas.text_cursor = [0, 40]
-  ram_string = "#{ram_usage}/#{total_ram}MB"
+  ram_string = "#{ram_usage}/#{total_ram}M"
   canvas.print "RAM Usage:#{ram_string.rjust(11, ' ')}"
   
   canvas.text_cursor = [0, 48]
