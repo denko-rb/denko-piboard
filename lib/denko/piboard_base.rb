@@ -1,46 +1,55 @@
 require 'denko'
-require 'pigpio'
+require 'lgpio'
 
 module Denko
   class PiBoard
-    include Pigpio::Constant
-      
-    attr_reader :high, :low, :pwm_high
+    LOW      = 0
+    HIGH     = 1
+    PWM_HIGH = 100
+    def low;      LOW;      end
+    def high;     HIGH;     end
+    def pwm_high; PWM_HIGH; end
 
-    def initialize
-      # On 64-bit systems there's a pigpio bug where wavelengths are doubled.
-      @aarch64 = RUBY_PLATFORM.match(/aarch64/)
+    def initialize(gpio_chip: 0, i2c_devices: nil, spi_devices: nil, pwm_chips: nil)
+      # Validate GPIO, I2C and SPI devices.
+      @gpio_dev = gpio_chip
+      raise ArgumentError, "invalid gpio_chip: #{@gpio_dev} given. Must be Integer" if @gpio_dev.class != Integer
 
-      # Pin state
-      @pins          = []
-      @pwms          = []
+      @pwm_chips = [pwm_chips].flatten.compact
+      @pwm_chips.each do |chip|
+        raise ArgumentError, "invalid Integer for index: in pwm_chip: #{chip}" if chip[:index].class != Integer
+        chip[:gpios].each_pair do |gpio, chan|
+          raise ArgumentError, "invalid Integer: #{gpio} in keys (GPIOs) of pwm_chip#{chip}" if gpio.class != Integer
+          raise ArgumentError, "invalid Integer: #{chan} in values (channels) of pwm_chip#{chip}" if chan.class != Integer
+        end
+      end
+      @hardware_pwms = {}
 
-      # Listener state
-      @pin_listeners  = []
-      @listen_mutex   = Mutex.new
-      @listen_states  = Array.new(32) { 0 }
-      @listen_thread  = nil
-      @listen_reading = 0
-      
-      # PiGPIO callback state. Unused for now.
-      @pin_callbacks = []
+      @i2c_devs = [i2c_devices].flatten.compact
+      @i2c_devs.each do |dev|
+        raise ArgumentError, "invalid Integer pin for sda: in i2c_device: #{dev}" if dev[:sda].class != Integer
+        raise ArgumentError, "invalid Integer for index: in i2c_device: #{dev}" if dev[:index].class != Integer
+      end
 
-      # Logic levels
-      @low           = 0
-      @high          = 1
-      @pwm_high      = 255
+      @spi_devs = [spi_devices].flatten.compact
+      @spi_devs.each do |dev|
+        raise ArgumentError, "invalid Integer pin for cs0: in spi_device: #{dev}" if dev[:cs0].class != Integer
+        raise ArgumentError, "invalid Integer for index: in spi_device: #{dev}" if dev[:index].class != Integer
+      end
 
-      # Use the pigpiod interface directly.
-      @pi_handle = Pigpio::IF.pigpio_start
-      exit(-1) if @pi_handle < 0
-      
-      # Open the libgpiod interface too.
-      Denko::GPIOD.open_chip
+      # Config state storage for pins.
+      @pin_configs = []
+
+      # This thread will receive alerts from the LGPIO process and call #update.
+      @alert_thread = nil
+      @reporting_started = false
+
+      # Immediately open the GPIO device
+      @gpio_handle = LGPIO.chip_open(@gpio_dev)
     end
 
     def finish_write
-      Pigpio::IF.pigpio_stop(@pi_handle)
-      Denko::GPIOD.close_chip
+      LGPIO.chip_close(@gpio_handle)
     end
 
     #
@@ -48,34 +57,10 @@ module Denko
     #
     include Behaviors::Subcomponents
 
-    def update(pin, message, time=nil)
+    def update(pin, message)
       if single_pin_components[pin]
         single_pin_components[pin].update(message)
       end
-    end
-
-    private
-
-    attr_reader :pi_handle, :wave
-
-    def get_gpio(pin)
-      @pins[pin] ||= Pigpio::UserGPIO.new(@pi_handle, pin)
-    end
-    
-    def pwm_clear(pin)
-      @pwms[pin] = nil
-    end
-
-    def new_wave
-      stop_wave
-      @wave = Pigpio::Wave.new(pi_handle)
-    end
-
-    def stop_wave
-      return unless wave
-      wave.tx_stop
-      wave.clear
-      @wave = nil
     end
   end
 end

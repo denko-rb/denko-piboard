@@ -1,19 +1,6 @@
 module Denko
   class PiBoard
     MAP = {
-      # Only use SPI1 interface.
-      SS:   18,
-      MISO: 19,
-      MOSI: 20,
-      SCK:  21,
-      
-      # Only use I2C1 interface.
-      SDA: 2,
-      SCL: 3,
-
-      # Single UART
-      TX: 14,
-      RX: 15,
     }
 
     def map

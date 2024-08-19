@@ -1,71 +1,48 @@
 module Denko
   class PiBoard
+    def spi_flags(mode)
+      mode ||= 0
+      raise ArgumentError, "invalid SPI mode #{mode}" unless (0..3).include? mode
 
-    def spi_config(mode, bit_order)
-      # Config is a 32-bit mask, where bits 0 and 1 are a 2-bit number equal to the SPI mode.
-      # Default to SPI mode 0 when none given.
-      config = mode || 0
-      raise ArgumentError, "invalid SPI mode #{config}" unless (0..3).include? config
-
-      # Default to :msbfirst when bit_order not given.
-      bit_order ||= :msbfirst
-      unless (bit_order == :msbfirst) || (bit_order == :lsbfirst)
-        raise ArgumentError, "invalid bit order #{bitorder}"
-      end
-
-      # Bits 14 and 15 control MSBFIRST (0) or LSBFIRST (1) for MOSI and MISO respectively.
-      # Use same order for both directions like Arduino does.
-      config |= (0b11 << 14) if bit_order == :lsbfirst
-
-      # Use SPI1 interface instead of SPI0.
-      # Setting bit 8 means we're using SPI1.
-      config |= (0b1 << 8)
-
-      # Bits 5-7 set leaves all CE pins free, and allows any GPIO to be used for chip enable.
-      # We toggle separately in #spi_transfer.
-      config |= (0b111 << 5)
+      # Flags is a 32-bit mask. Bits [1..0] are the SPI mode. Default to 0.
+      config = mode
 
       return config
     end
 
     # CMD = 26
-    def spi_transfer(select_pin, write: [], read: 0, frequency: nil, mode: nil, bit_order: nil)
-      # Default to 1MHz SPI frequency.
-      frequency ||= 1000000
+    def spi_transfer(select_pin, write:[], read:0, frequency: 1_000_000, mode: 0, bit_order: nil)
+      # Default to 1Mhz frequency.
+      frequency ||= 1_000_000
 
-      # Make SPI config mask.
-      config = spi_config(mode, bit_order)
+      # Make SPI flags mask.
+      flags = spi_flags(mode)
 
       # Open SPI handle.
-      spi_open(frequency, config)
-      
-      # Chip enable low. select_pin == 255 means no chip enable (mostly for APA102 LEDs).
-      digital_write(select_pin, 0) unless select_pin == 255
+      spi_open(@spi_devs.first[:index], 0, frequency, flags)
+
+      # Pull select_pin low unless it's 255 (no select pin) or CS0 (interface will do it).
+      unless [@spi_devs.first[:cs0], 255].include? select_pin
+        digital_write(select_pin, 0) unless select_pin == 255
+      end
 
       # Do the SPI transfer.
-      write_bytes = write.pack("C*")
-      read_bytes = Pigpio::IF.spi_xfer(pi_handle, spi_handle, write_bytes)
+      read_bytes = LGPIO.spi_xfer(@spi_handle, write)
 
       # Close SPI handle.
       spi_close
 
-      # Chip enable high. select_pin == 255 means no chip enable (mostly for APA102 LEDs).
-      digital_write(select_pin, 1) unless select_pin == 255
+      # Put select_pin back high if needed.
+      unless [@spi_devs.first[:cs0], 255].include? select_pin
+        digital_write(select_pin, 1) unless select_pin == 255
+      end
 
       # Handle spi_xfer errors.
       raise StandardError, "spi_xfer error, code #{read_bytes}" if read_bytes.class == Integer
 
-      # Handle read bytes.
+       # If reading bytes, call #update as if coming from select_pin.
       if read > 0
-        message = ""
-
-        # Format like a microcontrolelr would. Limit to number of bytes requested.
-        i = 0
-        while i < read
-          message = "#{message},#{read_bytes[i].ord}"
-        end
-
-        # Call update with the message as if coming from select_pin.
+        message = read_bytes.take(read).join(",")
         self.update(select_pin, message)
       end
     end
@@ -80,16 +57,14 @@ module Denko
 
     private
 
-    attr_reader :spi_handle
-    
-    def spi_open(frequency, config)
+    def spi_open(index, channel, frequency, flags=0x00)
       # Give SPI channel as 0 (SPI CE0), even though we are toggling chip enable separately.
-      @spi_handle = Pigpio::IF.spi_open(pi_handle, 0, frequency, config)
+      @spi_handle = LGPIO.spi_open(index, channel, frequency, flags)
       raise StandardError, "SPI error, code #{@spi_handle}" if @spi_handle < 0
     end
 
     def spi_close
-      Pigpio::IF.spi_close(pi_handle, spi_handle)
+      LGPIO.spi_close(@spi_handle)
       @spi_handle  = nil
     end
 
