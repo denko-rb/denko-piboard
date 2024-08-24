@@ -4,7 +4,7 @@
 
 This gem adds support for Linux GPIO, I2C, and SPI devices to the [`denko`](https://github.com/denko-rb/denko) gem. Unlike the main gem, peripherals are connected directly to a single board computer, such as a Raspberry Pi or Orange Pi, instead of a microcontroller attached to a computer.
 
-`Denko::PiBoard`, representing your SBC GPIO header, is a drop-in replacement for `Denko::Board` (attached microcontroller).
+`Denko::PiBoard`, representing your SBC GPIO, is a drop-in replacement for `Denko::Board` (a microcontroller).
 
 ## Example
 ```ruby
@@ -109,9 +109,9 @@ gem install denko-piboard
 ```
 **Note:** `sudo` may be needed before `gem install` if using the system ruby.
 
-## Hardware Setup
+## Hardware Configuration
 
-#### 1. Enable PWM, I2C and SPI Devices
+### 1. Enable PWM, I2C and SPI Devices
 PWM, I2C, and SPI may be disabled on your SBC by default. This varies by manufacturer and Linux distro. You need to figure out how to enable them on your machine.
 
 For the Orange Pi Zero 2W specifically, running DietPi, I wrote a guide [here](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-5-enable-i2c-and-spi).
@@ -120,16 +120,19 @@ For Raspberry Pi SBCs, running Raspberry Pi OS, `sudo raspi-config` should have 
   - [Configuring I2C](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c) (Adafruit)
   - [Configuring SPI](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi) (Adafruit)
   - [Change Raspberry Pi I2C Bus Speed](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/) (Raspberry Spy)
+  - [Raspberry Pi Pinout](https://pinout.xyz/)
 
 **Note:** Unlike microcontrollers used by the main gem, I2C frequency is set at boot time in Linux, and cannot be changed on a per-transmission basis.
+
 **Note:** Again, unlike the microcontroller gem, pins bound to an I2C, SPI or UART interface cannot be used for Digital I/O at all.
+
 **Note:** Once a hardware PWM channel is activated on a given pin, the GPIO associated with that pin cannot be used for Digital I/O until rebooting.
 
 ### 2. Get Permission
 By default, only the `root` user might have access to GPIO, I2C and SPI devices. If you don't want to run your Ruby scripts as `root`, [this section](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-6-get-permission) of my Orange Pi Zero 2W setup tutorial is broadly applicable. It should give your user permissions, regardless of SBC or Linux distro in use.
 
 ## More Examples
-Some examples are in this gem's [examples](examples) folder, but examples from the [main gem](https://github.com/denko-rb/denko/tree/master/examples) can be modified to work too:
+Some examples are [in this gem](examples), but examples from the [main gem](https://github.com/denko-rb/denko/tree/master/examples) can be modified to work too:
 
 1. Replace setup code:
   ```ruby
@@ -146,17 +149,17 @@ Some examples are in this gem's [examples](examples) folder, but examples from t
     board = Denko::PiBoard.new
   ```
 
-2. Update GPIO/pin numbers as needed. Raspberry Pi pinouts can be found [here](https://pinout.xyz/).
+2. Update GPIO/pin numbers as needed.
 
-3. Give I2C or SPI device details to `Denko::PiBoard.new` as needed. For example, if you want the `PiBoard` instance to use `/dev/i2c-2`, and the SDA pin for that device is GPIO 29, initialize as follows:
+3. Give I2C or SPI device details to `Denko::PiBoard.new` as needed. For example, if you want the `PiBoard` instance to use `/dev/i2c-2`, and the `SDA` pin for that device is `GPIO29`, initialize as follows:
   ```
     board = Denko::Board.new(i2c_devices: [{index: 2, sda: 29}])
   ```
   See I2C and SPI examples for more info.
 
-**Note:** Currently this gem, and the main `denko` gem, only support 1 each of I2C and SPI hardware devices. Support for multiples is planned.
+**Note:** Currently this gem, and the main `denko` gem, only support 1 each of I2C and SPI hardware devices.
 
-**Note:** Not all features from all examples in the main gem are implemented yet, nor can be implemented. See [Features](#features) below.
+**Note:** Not everything in the main gem is implemented yet, nor can be implemented. See [Features](#features).
 
 ### Dependencies
 
