@@ -1,7 +1,10 @@
-# This board map will work for an Orange Pi Zero 2W running DietPi
-#   Enable overlays for: /dev/i2c1 and /dev/spidev-1.0
-#   Sysfs PWM channels 1 and 2 work by default, but must be exported on boot.
-#   PWM channels 2 and 3 only work if UART0 is disabled in device-tree.
+#
+# This is for an Orange Pi Zero 2W running DietPi,
+# with these overlays enabled: spidev1_0 i2c1-pi
+#
+# PWM channels 1 and 2 work by default, but must be exported on boot.
+# Channels 3 and 4 require UART0 to be disabled in device tree.
+#
 ---
 gpiochip: 0
 pwmchips:

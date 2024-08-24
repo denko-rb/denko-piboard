@@ -50,9 +50,9 @@ sleep
   - [ ] > 1 interface
 - [x] SPI
   - [ ] > 1 interface
+  - [ ] WS2812 addressable LED via SPI MOSI
   - [ ] SPI Listeners from `denko`
   - **Note**: Always setup the SPI interface to bind the `CE0` pin, and no more. Since these bindings cannot be changed without rebooting, this gem is written to use `CE0` if you give the corresponding GPIO number as your enable pin, but separately toggle any other GPIO to function as your enable pin, if needed. This way you bind the fewest pins possible to the SPI device, and leave them free for any use.
-  - [ ] WS2812 addressable LED via SPI MOSI
 - [ ] UART
 - [ ] BitBang I2C
 - [ ] BitBang SPI
