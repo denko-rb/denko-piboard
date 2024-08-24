@@ -58,7 +58,7 @@ module Denko
     private
 
     def spi_open(index, channel, frequency, flags=0x00)
-      # Give SPI channel as 0 (SPI CE0), even though we are toggling chip enable separately.
+      # Give SPI channel as 0 (SPI CS0), even though we are toggling chip enable separately.
       @spi_handle = LGPIO.spi_open(index, channel, frequency, flags)
       raise StandardError, "SPI error, code #{@spi_handle}" if @spi_handle < 0
     end
