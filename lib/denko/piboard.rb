@@ -11,3 +11,4 @@ require_relative 'piboard_infrared'
 
 require_relative 'piboard_i2c'
 require_relative 'piboard_spi'
+require_relative 'piboard_one_wire'
