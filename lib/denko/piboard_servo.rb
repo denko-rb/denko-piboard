@@ -2,7 +2,7 @@ module Denko
   class PiBoard
     # CMD = 10
     def servo_toggle(pin, value=:off, options={})
-      pwm = pwm_instance_from_pin(pin)
+      pwm = hardware_pwm_from_pin(pin)
       if (value == :off)
         pwm.duty_cycle = 0
         pwm.disable

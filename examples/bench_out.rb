@@ -4,7 +4,7 @@ PIN       = 272
 COUNT     = 1000000
 
 board = Denko::PiBoard.new
-output = Denko::DigitalIO::Output.new(board: board, pin: 272)
+output = Denko::DigitalIO::Output.new(board: board, pin: PIN)
 
 t1 = Time.now
 COUNT.times do

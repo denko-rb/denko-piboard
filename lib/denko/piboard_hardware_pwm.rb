@@ -1,20 +1,21 @@
 module Denko
   class PiBoard
-    def pwm_chip_and_channel_from_pin(pin)
-      @pwm_chips.each do |chip|
-        channel = chip[:gpios][pin]
-        return [chip[:index], channel] if channel
+    def pwmchip_and_channel_from_pin(pin)
+      @pwmchips.each do |chip_index, channel_hash|
+        channel_hash.each do |channel, gpio|
+          return [chip_index, channel] if gpio == pin
+        end
       end
       return [nil, nil]
     end
 
-    def pwm_instance_from_pin(pin)
+    def hardware_pwm_from_pin(pin)
       # Return existing instance, if any, for this GPIO.
       pwm = @hardware_pwms[pin]
       return pwm if pwm
 
       # See if the pin maps to a pwmchip and channel.
-      chip_index, channel = pwm_chip_and_channel_from_pin(pin)
+      chip_index, channel = pwmchip_and_channel_from_pin(pin)
       raise "GPIO: #{pin} not mapped to hardware PWM channel" unless (chip_index && channel)
 
       # Create HardwarePWM instance if it does.

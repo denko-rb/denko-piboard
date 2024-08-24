@@ -2,7 +2,7 @@
 
 ## Linux SBC GPIO in Ruby
 
-This gem adds support for Linux GPIO, I2C, and SPI devices to the [`denko`](https://github.com/denko-rb/denko) gem. Unlike the main gem, peripherals are connected directly to a single board computer, such as a Raspberry Pi or Orange Pi, instead of a microcontroller attached to a computer.
+This gem adds support for Linux GPIO, PWM, I2C, and SPI devices to the [`denko`](https://github.com/denko-rb/denko) gem. Unlike the main gem, peripherals are connected directly to a single board computer, such as a Raspberry Pi or Orange Pi, instead of a microcontroller attached to a computer.
 
 `Denko::PiBoard`, representing your SBC GPIO, is a drop-in replacement for `Denko::Board` (a microcontroller).
 
@@ -62,7 +62,7 @@ sleep
 
 ### Incompatible Features From `denko`
 - EEPROM (Use the filesystem for persistence instead)
-- Analog IO (No ADCs or DACs integrated into these SBCSs. Use extenal ADC or DAC over I2C or SPI)
+- Analog I/O (No ADCs or DACs integrated into these SBCSs. Use extenal ADC or DAC)
 
 ## Support
 

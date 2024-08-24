@@ -15,8 +15,13 @@ require 'denko/piboard'
 # Used to make bar graphs for CPU and RAM usage.
 BAR_ELEMENT = [0x00, 0x7E, 0x7E, 0x7E, 0x00]
 
-board = Denko::PiBoard.new i2c_devices: [{index: 3, sda: 264}]
-i2c = Denko::I2C::Bus.new(board: board, pin: 264)
+# Create a board map for your SBC, so Denko can map I2C pins to GPIOs.
+board_map = File.join(File.dirname(__FILE__), "board_maps/orange_pi_zero_2w.yml")
+board = Denko::PiBoard.new(board_map)
+
+# We also need to tell the I2C bus what its SDA pin is.
+sda_pin = board.i2cs.values.first[:sda]
+i2c = Denko::I2C::Bus.new(board: board, pin: sda_pin)
 
 oled = Denko::Display::SSD1306.new(bus: i2c, rotate: true)
 canvas = oled.canvas

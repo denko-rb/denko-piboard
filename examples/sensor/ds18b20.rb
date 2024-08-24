@@ -4,8 +4,9 @@
 require 'denko/piboard'
 
 PIN = 256
+
 board = Denko::PiBoard.new
-bus = Denko::OneWire::Bus.new(pin: PIN, board: board)
+bus = Denko::OneWire::Bus.new(board: board, pin: PIN)
 
 # The bus detects parasite power automatically when initialized.
 # It can tell that parasite power is in use, but not by WHICH devices.

@@ -19,10 +19,10 @@ module Denko
       flags = spi_flags(mode)
 
       # Open SPI handle.
-      spi_open(@spi_devs.first[:index], 0, frequency, flags)
+      spi_open(@spis.keys.first, 0, frequency, flags)
 
       # Pull select_pin low unless it's 255 (no select pin) or CS0 (interface will do it).
-      unless [@spi_devs.first[:cs0], 255].include? select_pin
+      unless [@spis.values.first[:cs0], 255].include? select_pin
         digital_write(select_pin, 0) unless select_pin == 255
       end
 
@@ -33,7 +33,7 @@ module Denko
       spi_close
 
       # Put select_pin back high if needed.
-      unless [@spi_devs.first[:cs0], 255].include? select_pin
+      unless [@spis.values.first[:cs0], 255].include? select_pin
         digital_write(select_pin, 1) unless select_pin == 255
       end
 

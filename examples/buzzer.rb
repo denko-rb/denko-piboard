@@ -4,6 +4,7 @@
 require 'denko/piboard'
 
 PIN = 268
+
 board = Denko::PiBoard.new
 buzzer = Denko::PulseIO::Buzzer.new(board: board, pin: PIN)
 

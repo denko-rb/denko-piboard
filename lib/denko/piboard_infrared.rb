@@ -2,7 +2,7 @@ module Denko
   class PiBoard
     def infrared_emit(pin, frequency, pulses)
       # Main gem uses frequency in kHz. Set it in Hz.
-      pwm = pwm_instance_from_pin(pin)
+      pwm = hardware_pwm_from_pin(pin)
       pwm.frequency = (frequency * 1000)
 
       # The actual strings for the sysfs PWM interface.

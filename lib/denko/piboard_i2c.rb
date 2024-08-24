@@ -17,7 +17,7 @@ module Denko
         # Address ranges 0..7 and 120..127 are reserved.
         # Try each address in 8..119 (0x08 to 0x77).
         (0x08..0x77).each do |address|
-          i2c_open(@i2c_devs.first[:index], address)
+          i2c_open(@i2cs.keys.first, address)
           bytes = LGPIO.i2c_read_device(@i2c_handle, 1)
           found_string << "#{address}:" if bytes[0] > 0
           i2c_close
@@ -27,7 +27,7 @@ module Denko
         found_string.chop! unless found_string.empty?
 
         # Update the bus as if message came from microcontroller.
-        self.update(@i2c_devs.first[:sda], found_string)
+        self.update(@i2cs.values.first[:sda], found_string)
       end
     end
 
@@ -36,7 +36,7 @@ module Denko
       i2c_mutex.synchronize do
         raise ArgumentError, "can't write more than #{i2c_limit} bytes to I2C" if bytes.length > i2c_limit
 
-        i2c_open(@i2c_devs.first[:index], address)
+        i2c_open(@i2cs.keys.first, address)
         LGPIO.i2c_write_device(@i2c_handle, bytes)
         i2c_close
       end
@@ -47,7 +47,7 @@ module Denko
       i2c_mutex.synchronize do
         raise ArgumentError, "can't read more than #{i2c_limit} bytes to I2C" if read_length > i2c_limit
 
-        i2c_open(@i2c_devs.first[:index], address)
+        i2c_open(@i2cs.keys.first, address)
         LGPIO.i2c_write_device(@i2c_handle, register) if register
         bytes = LGPIO.i2c_read_device(@i2c_handle, read_length)
         i2c_close
@@ -56,7 +56,7 @@ module Denko
         message = "#{address}-#{bytes.join(",")}"
 
         # Update the bus as if message came from microcontroller.
-        self.update(@i2c_devs.first[:sda], message)
+        self.update(@i2cs.values.first[:sda], message)
       end
     end
 

@@ -4,6 +4,7 @@
 require 'denko/piboard'
 
 DHT_PIN = 267
+
 board = Denko::PiBoard.new
 sensor = Denko::Sensor::DHT.new(board: board, pin: DHT_PIN)
 

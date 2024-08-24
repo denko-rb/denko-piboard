@@ -1,5 +1,6 @@
 require 'denko'
 require 'lgpio'
+require 'yaml'
 
 module Denko
   class PiBoard
@@ -10,31 +11,53 @@ module Denko
     def high;     HIGH;     end
     def pwm_high; PWM_HIGH; end
 
-    def initialize(gpio_chip: 0, i2c_devices: nil, spi_devices: nil, pwm_chips: nil)
-      # Validate GPIO, I2C and SPI devices.
-      @gpio_dev = gpio_chip
-      raise ArgumentError, "invalid gpio_chip: #{@gpio_dev} given. Must be Integer" if @gpio_dev.class != Integer
+    attr_reader :gpiochip, :pwmchips, :i2cs, :spis
 
-      @pwm_chips = [pwm_chips].flatten.compact
-      @pwm_chips.each do |chip|
-        raise ArgumentError, "invalid Integer for index: in pwm_chip: #{chip}" if chip[:index].class != Integer
-        chip[:gpios].each_pair do |gpio, chan|
-          raise ArgumentError, "invalid Integer: #{gpio} in keys (GPIOs) of pwm_chip#{chip}" if gpio.class != Integer
-          raise ArgumentError, "invalid Integer: #{chan} in values (channels) of pwm_chip#{chip}" if chan.class != Integer
+    def initialize(map_yaml=nil)
+      # If a YAML map isn't given, only try to access gpiochip0.
+      if map_yaml
+        map = YAML.load_file(map_yaml, symbolize_names: true)
+      else
+        map = {gpiochip: 0}
+      end
+
+      # gpiochip validation
+      @gpiochip = map[:gpiochip]
+      raise ArgumentError, "invalid gpiochip: #{@gpiochip} given. Must be Integer" if @gpiochip.class != Integer
+
+      # pwmchips validation
+      @pwmchips = map[:pwmchips] || {}
+      @pwmchips.each do |chip, channel_hash|
+        raise ArgumentError, "invalid index for pwmchip: #{chip}. Should be Integer" if chip.class != Integer
+        channel_hash.each do |chan, gpio|
+          raise ArgumentError, "invalid Integer: #{chan} in keys (channels) of pwm_chip#{chip}" if chan.class != Integer
+          raise ArgumentError, "invalid Integer: #{gpio} in values (GPIOs) of pwm_chip#{chip}" if gpio.class != Integer
         end
       end
       @hardware_pwms = {}
 
-      @i2c_devs = [i2c_devices].flatten.compact
-      @i2c_devs.each do |dev|
-        raise ArgumentError, "invalid Integer pin for sda: in i2c_device: #{dev}" if dev[:sda].class != Integer
-        raise ArgumentError, "invalid Integer for index: in i2c_device: #{dev}" if dev[:index].class != Integer
+      # i2cs validation
+      @i2cs = map[:i2cs] || {}
+      @i2cs.each do |dev, gpios|
+        raise ArgumentError, "invalid index i2c: #{dev}. Should be Integer" if dev.class != Integer
+        raise ArgumentError, "missing scl GPIO for i2c#{dev}" unless @i2cs[dev][:scl]
+        raise ArgumentError, "missing sda GPIO for i2c#{dev}" unless @i2cs[dev][:sda]
+        gpios.each do |name, gpio|
+          raise ArgumentError, "invalid Integer pin for #{name} in i2c#{dev}" if gpio.class != Integer
+        end
       end
 
-      @spi_devs = [spi_devices].flatten.compact
-      @spi_devs.each do |dev|
-        raise ArgumentError, "invalid Integer pin for cs0: in spi_device: #{dev}" if dev[:cs0].class != Integer
-        raise ArgumentError, "invalid Integer for index: in spi_device: #{dev}" if dev[:index].class != Integer
+      # spis validation
+      @spis = map[:spis] || {}
+      @spis.each do |dev, gpios|
+        raise ArgumentError, "invalid index for spi-dev: #{dev}. Should be Integer" if dev.class != Integer
+        raise ArgumentError, "missing sck GPIO for spidev-#{dev}" unless @spis[dev][:sck]
+        raise ArgumentError, "missing mosi GPIO for spidev-#{dev}" unless @spis[dev][:mosi]
+        raise ArgumentError, "missing miso GPIO for spidev-#{dev}" unless @spis[dev][:miso]
+        raise ArgumentError, "missing cs0 GPIO for spidev-#{dev}" unless @spis[dev][:cs0]
+        gpios.each do |name, gpio|
+          raise ArgumentError, "invalid Integer pin for #{name} in i2c#{dev}" if gpio.class != Integer
+        end
       end
 
       # Config state storage for pins.
@@ -45,7 +68,7 @@ module Denko
       @reporting_started = false
 
       # Immediately open the GPIO device
-      @gpio_handle = LGPIO.chip_open(@gpio_dev)
+      @gpio_handle = LGPIO.chip_open(@gpiochip)
     end
 
     def finish_write

@@ -3,8 +3,8 @@ module Denko
     # CMD = 0
     def set_pin_mode(pin, mode=:input)
       # If given a hardware PWM pin, only allow it to be used for output.
-      unless pwm_chip_and_channel_from_pin(pin).compact.empty?
-        return pwm_instance_from_pin(pin) if (mode.to_s.match /output/)
+      unless pwmchip_and_channel_from_pin(pin).compact.empty?
+        return hardware_pwm_from_pin(pin) if (mode.to_s.match /output/)
         raise "GPIO #{pin}, with hardware PWM, cannot be used for input"
       end
 
