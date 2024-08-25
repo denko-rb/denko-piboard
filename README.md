@@ -37,7 +37,7 @@ sleep
 
 ## Features
 - [x] Internal Pull Up/Down
-- [ ] Open Drain/Source
+- [x] Open Drain/Source
 - [x] Digital Read/Write
 - [x] Digital "Listen" / Alerts
   - Unlike the main gem, where the microcontroller polls pins up to every 1ms, `lgpio`'s alert feature reads them much faster.

@@ -1,28 +1,42 @@
 module Denko
   class PiBoard
+    INPUT_MODES  = [:input, :input_pullup, :input_pulldown]
+    OUTPUT_MODES = [:output, :output_pwm, :output_open_drain, :output_open_source]
+    PIN_MODES = INPUT_MODES + OUTPUT_MODES
+
     # CMD = 0
     def set_pin_mode(pin, mode=:input)
-      # If given a hardware PWM pin, only allow it to be used for output.
-      unless pwmchip_and_channel_from_pin(pin).compact.empty?
-        return hardware_pwm_from_pin(pin) if (mode.to_s.match /output/)
-        raise "GPIO #{pin}, with hardware PWM, cannot be used for input"
+      # Is the mode valid?
+      unless PIN_MODES.include?(mode)
+        raise ArgumentError, "cannot set mode: #{mode}. Should be one of: #{PIN_MODES.inspect}"
       end
 
-      # Use LGPIO if no hardware PWM.
-      LGPIO.gpio_free(@gpio_handle, pin)
-
-      if mode.to_s.match /output/
-        result = LGPIO.gpio_claim_output(@gpio_handle, LGPIO::SET_PULL_NONE, pin, LOW)
-      else
-        # Determine pull direction
-        pull = LGPIO::SET_PULL_NONE
-        if mode.to_s.match /pulldown/
-          pull = LGPIO::SET_PULL_DOWN
-        elsif mode.to_s.match /pullup/
-          pull = LGPIO::SET_PULL_UP
+      # Is the pin in use by the kernel?
+      if ((LGPIO.gpio_get_mode(@gpio_handle, pin) & 0b1) == 1)
+        # Is the pin associated with a PWM channel?
+        if pwmchip_and_channel_from_pin(pin)
+          # Use it for these 2 modes, abstracting digital I/O with 100% and 0% duty cycles.
+          if [:output, :output_pwm].include?(mode)
+            puts "WARNING: GPIO: #{pin} is in hardware PWM mode. Performance may be worse."
+            return hardware_pwm_from_pin(pin)
+          end
+          raise "pin: #{pin} is in hadrware PWM mode. Can only be used as :output or :output_pwm until reboot"
+        else
+          raise "pin: #{pin} is used by the kernel. Cannot be used for GPIO"
         end
+      end
 
-        result = LGPIO.gpio_claim_input(@gpio_handle, pull, pin)
+      # Normal GPIO setup
+      if OUTPUT_MODES.include?(mode)
+        flags  = LGPIO::SET_PULL_NONE
+        flags  = LGPIO::SET_OPEN_DRAIN  if mode == :output_open_drain
+        flags  = LGPIO::SET_OPEN_SOURCE if mode == :output_open_source
+        result = LGPIO.gpio_claim_output(@gpio_handle, flags, pin, LOW)
+      else
+        flags  = LGPIO::SET_PULL_NONE
+        flags  = LGPIO::SET_PULL_UP   if mode == :input_pullup
+        flags  = LGPIO::SET_PULL_DOWN if mode == :input_pulldown
+        result = LGPIO.gpio_claim_input(@gpio_handle, flags, pin)
       end
       raise "could not claim GPIO #{pin}. LGPIO error: #{result}" if result < 0
 

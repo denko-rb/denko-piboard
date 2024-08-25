@@ -6,13 +6,16 @@ module Denko
           return [chip_index, channel] if gpio == pin
         end
       end
-      return [nil, nil]
+      return nil
     end
 
     def hardware_pwm_from_pin(pin)
       # Return existing instance, if any, for this GPIO.
       pwm = @hardware_pwms[pin]
       return pwm if pwm
+
+      # Free it in lgpio, in case previously used there.
+      LGPIO.gpio_free(@gpio_handle, pin)
 
       # See if the pin maps to a pwmchip and channel.
       chip_index, channel = pwmchip_and_channel_from_pin(pin)
