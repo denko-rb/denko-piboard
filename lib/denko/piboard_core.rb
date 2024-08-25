@@ -92,7 +92,7 @@ module Denko
 
       # Reclaim it as input if needed.
       config   = @pin_configs[pin]
-      config ||= { mode: :input, glitch_time: nil } if state == :on
+      config ||= { mode: :input, debounce_time: nil } if state == :on
       if config
         set_pin_mode(pin, config[:mode])
         set_pin_debounce(pin, config[:debounce_time])
