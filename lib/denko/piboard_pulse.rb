@@ -2,6 +2,11 @@ require 'timeout'
 
 module Denko
   class PiBoard
+    def hcsr04_read(echo_pin, trigger_pin)
+      microseconds = LGPIO.gpio_read_ultrasonic(@gpio_handle, trigger_pin, echo_pin, 10)
+      self.update(echo_pin, microseconds.to_s)
+    end
+
     def pulse_read(pin, reset: false, reset_time: 0, pulse_limit: 100, timeout: 200)
       # Validation
       raise ArgumentError, "error in reset: #{reset}. Should be either #{high} or #{low}"         if reset && ![high, low].include?(reset)

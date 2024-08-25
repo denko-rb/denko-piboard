@@ -56,7 +56,7 @@ sleep
 - [ ] UART
 - [ ] BitBang I2C
 - [ ] BitBang SPI
-- [ ] Single Pulse Input (bit-banged, for HC-SR04 and similar)
+- [x] Ultrasonic Input (bit-banged, for HC-SR04 and similar)
 - [x] Pulse Sequence Input (bit-banged, for DHT-class enviro sensors)
 - [x] 1-Wire (bit-banged)
 
