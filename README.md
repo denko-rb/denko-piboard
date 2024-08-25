@@ -39,11 +39,13 @@ sleep
 - [x] Internal Pull Up/Down
 - [x] Open Drain/Source
 - [x] Digital Read/Write
-- [x] Digital "Listen" / Alerts
-  - Unlike the main gem, where the microcontroller polls pins up to every 1ms, `lgpio`'s alert feature reads them much faster.
+- [x] Digital Listen (Alerts)
+  - Unlike the microcontroller gem, which polls as fast as 1ms, `lgpio` alerts are polled much faster.
+  - Unlike the microcontroller gem, this is unaffected by long-running calls, eg. Infrared or WS2812.
+  - Alerts are read from a FIFO queue that holds up to 65,536 alerts. Oldest alerts are lost first.
 - [x] Software PWM Out (any pin)
-- [x] Tone Out (via Software PWM)
-- [x] Hardware PWM Out (specific pins, vary by board and setup)
+- [x] Hardware PWM Out (specific pins, vary by board and configuration)
+- [x] Tone Out (via Software PWM or Hardware PWM)
 - [x] Servo (via Hardware PWM)
 - [x] Infrared Out (via Hardware PWM)
 - [x] I2C
