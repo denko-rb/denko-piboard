@@ -11,16 +11,21 @@ module Denko
         raise ArgumentError, "cannot set mode: #{mode}. Should be one of: #{PIN_MODES.inspect}"
       end
 
-      # Is the pin in use by the kernel?
+      # IF PWM output requested, and GPIO has hardware PWM channel, use it.
+      if (mode == :output_pwm) && pwmchip_and_channel_from_pin(pin)
+        return hardware_pwm_from_pin(pin)
+      end
+
+      # Is the pin in use by the kernel? Hardware PWM counts too.
       if ((LGPIO.gpio_get_mode(@gpio_handle, pin) & 0b1) == 1)
-        # Is the pin associated with a PWM channel?
         if pwmchip_and_channel_from_pin(pin)
-          # Use it for these 2 modes, abstracting digital I/O with 100% and 0% duty cycles.
-          if [:output, :output_pwm].include?(mode)
-            puts "WARNING: GPIO: #{pin} is in hardware PWM mode. Performance may be worse."
+          if (mode == :output)
+            # Abstract digital I/O with 100% and 0% duty cycles.
+            puts "WARNING: using hardware PWM on pin: #{pin} as GPIO. Performance will be worse."
             return hardware_pwm_from_pin(pin)
+          else
+            raise "pin: #{pin} is in hadrware PWM mode. Can only be :output or :output_pwm mode until reboot"
           end
-          raise "pin: #{pin} is in hadrware PWM mode. Can only be used as :output or :output_pwm until reboot"
         else
           raise "pin: #{pin} is used by the kernel. Cannot be used for GPIO"
         end
