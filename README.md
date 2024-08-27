@@ -48,16 +48,16 @@ sleep
 - [x] Tone Out (via Software PWM or Hardware PWM)
 - [x] Servo (via Hardware PWM)
 - [x] Infrared Out (via Hardware PWM)
-- [x] I2C
+- [x] Hardware I2C
   - [ ] > 1 interface
-- [x] SPI
+- [x] Hardware SPI
   - [ ] > 1 interface
   - [x] WS2812 addressable LED via SPI MOSI
   - [ ] SPI Listeners from `denko`
   - **Note**:  Set up the SPI interface to bind the `CS0` select pin, and no others. Pins bound to the SPI interface cannot be used for GPIO, and bindings cannot be changed without rebooting. `PiBoard` can use `CS0` (give the associated GPIO number) **OR** any arbitrary GPIO as a SPI device select pin.
 - [ ] UART
-- [ ] BitBang I2C
-- [ ] BitBang SPI
+- [x] Bit-Bang I2C
+- [ ] Bit-Bang SPI
 - [x] Ultrasonic Input (bit-banged, for HC-SR04 and similar)
 - [x] Pulse Sequence Input (bit-banged, for DHT-class enviro sensors)
 - [x] 1-Wire (bit-banged)

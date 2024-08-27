@@ -1,13 +1,14 @@
 require 'denko/piboard'
 
-# Create a board map for your SBC, so Denko can map I2C pins to GPIOs.
+GPIO_CHIP = 0
+SCL_PIN   = 228
+SDA_PIN   = 270
+
+# Create a board map for your SBC.
 board_map = File.join(File.dirname(__FILE__), "../board_maps/orange_pi_zero_2w.yml")
 board = Denko::PiBoard.new(board_map)
 
-# We also need to tell the I2C bus what its SDA pin is.
-sda_pin = board.i2cs.values.first[:sda]
-bus = Denko::I2C::Bus.new(board: board, pin: sda_pin)
-
+bus = Denko::I2C::BitBang.new(board: board, pins: {scl: SCL_PIN, sda: SDA_PIN})
 bus.search
 
 if bus.found_devices.empty?
