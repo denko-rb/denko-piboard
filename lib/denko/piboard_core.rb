@@ -16,6 +16,9 @@ module Denko
         return hardware_pwm_from_pin(pin)
       end
 
+      # Attempt to free the pin.
+      LGPIO.gpio_free(@gpio_handle, pin)
+
       # Is the pin in use by the kernel? Hardware PWM counts too.
       if ((LGPIO.gpio_get_mode(@gpio_handle, pin) & 0b1) == 1)
         if pwmchip_and_channel_from_pin(pin)
@@ -27,7 +30,7 @@ module Denko
             raise "pin: #{pin} is in hadrware PWM mode. Can only be :output or :output_pwm mode until reboot"
           end
         else
-          raise "pin: #{pin} is used by the kernel. Cannot be used for GPIO"
+          raise "pin: #{pin} in use by kernel (or does not exist). Cannot be used for GPIO"
         end
       end
 
