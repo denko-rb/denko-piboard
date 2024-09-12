@@ -3,7 +3,7 @@ module Denko
     # For PiBoard only. Claims the pins and sets the correct mode.
     # Should probably replace by calls to #set_pin_mode to raise errors properly.
     def i2c_bb_claim(scl, sda)
-      LGPIO.i2c_bb_claim(scl, sda)
+      LGPIO.i2c_bb_claim(@gpio_handle, scl, sda)
     end
 
     # CMD = 30
