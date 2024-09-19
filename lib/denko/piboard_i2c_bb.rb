@@ -1,14 +1,24 @@
 module Denko
   class PiBoard
-    # For PiBoard only. Claims the pins and sets the correct mode.
-    # Should probably replace by calls to #set_pin_mode to raise errors properly.
+    attr_reader :i2c_bbs
+
     def i2c_bb_claim(scl, sda)
-      LGPIO.i2c_bb_claim(@gpio_handle, scl, sda)
+      i2c_bb = LGPIO::I2CBitBang.new(@gpio_handle, scl, sda)
+      @i2c_bbs ? @i2c_bbs << i2c_bb : @i2c_bbs = [i2c_bb]
+    end
+
+    def i2c_bb_lookup(scl, sda)
+      return nil unless i2c_bbs
+      i2c_bbs.each do |bb|
+        return bb if (scl == bb.scl) && (sda == bb.sda)
+      end
+      nil
     end
 
     # CMD = 30
     def i2c_bb_search(scl, sda)
-      devices = LGPIO.i2c_bb_search(@gpio_handle, scl, sda)
+      interface    = i2c_bb_lookup(scl, sda)
+      devices      = interface.search
       found_string = ""
       found_string = devices.join(":") if devices
       self.update(sda, found_string)
@@ -16,13 +26,15 @@ module Denko
 
     # CMD = 31
     def i2c_bb_write(scl, sda, address, bytes, repeated_start=false)
-      LGPIO.i2c_bb_write(@gpio_handle, scl, sda, address, bytes)
+      interface = i2c_bb_lookup(scl, sda)
+      interface.write(address, bytes)
     end
 
     # CMD = 32
     def i2c_bb_read(scl, sda, address, register, read_length, repeated_start=false)
-      LGPIO.i2c_bb_write(@gpio_handle, scl, sda, address, register) if register
-      bytes = LGPIO.i2c_bb_read(@gpio_handle, scl, sda, address, read_length)
+      interface = i2c_bb_lookup(scl, sda)
+      interface.write(address, register) if register
+      bytes = interface.read(address, read_length)
 
       # Format the bytes like denko expects from a microcontroller.
       message = "#{address}-#{bytes.join(",")}"

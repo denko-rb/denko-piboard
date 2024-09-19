@@ -1,14 +1,10 @@
 require 'denko/piboard'
 
-GPIO_CHIP = 0
-SCL_PIN   = 228
-SDA_PIN   = 270
+SCL   = 228
+SDA   = 270
+board = Denko::PiBoard.new()
+bus   = Denko::I2C::BitBang.new(board: board, pins: {scl: SCL, sda: SDA})
 
-# Create a board map for your SBC.
-board_map = File.join(File.dirname(__FILE__), "../board_maps/orange_pi_zero_2w.yml")
-board = Denko::PiBoard.new(board_map)
-
-bus = Denko::I2C::BitBang.new(board: board, pins: {scl: SCL_PIN, sda: SDA_PIN})
 bus.search
 
 if bus.found_devices.empty?
