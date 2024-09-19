@@ -53,7 +53,7 @@ sleep
 - [x] Ultrasonic Input (for HC-SR04 and similar)
 - [x] Pulse Sequence Input (for DHT enviro sensors and similar)
 - [x] Bit-Bang I2C
-- [ ] Bit-Bang SPI
+- [x] Bit-Bang SPI
 - [x] Bit-Bang 1-Wire
 
 ### Incompatible Features (from denko)

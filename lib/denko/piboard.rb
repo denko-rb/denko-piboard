@@ -16,4 +16,5 @@ require_relative 'piboard_spi'
 require_relative 'piboard_led_array'
 
 require_relative 'piboard_i2c_bb'
+require_relative 'piboard_spi_bb'
 require_relative 'piboard_one_wire'

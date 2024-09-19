@@ -1,13 +1,13 @@
 require 'denko'
 require 'denko/piboard'
 
-CHIP_SELECT = 229
+CLOCK_PIN  = 22
+INPUT_PIN  = 5
+OUTPUT_PIN = 6
+SELECT_PIN = 17
 
-# Create a board map for your SBC, so Denko can map I2C pins to GPIOs.
-board_map = File.join(File.dirname(__FILE__), "../board_maps/orange_pi_zero_2w.yml")
-board = Denko::PiBoard.new(board_map)
-
-bus = Denko::SPI::Bus.new(board: board)
+board = Denko::PiBoard.new
+bus   = Denko::SPI::BitBang.new(board: board, pins: { clock: CLOCK_PIN, input: INPUT_PIN, output: OUTPUT_PIN })
 
 TEST_DATA = [0, 1, 2, 3, 4, 5, 6, 7]
 
@@ -15,7 +15,7 @@ TEST_DATA = [0, 1, 2, 3, 4, 5, 6, 7]
 class SPITester
   include Denko::SPI::Peripheral::SinglePin
 end
-spi_tester = SPITester.new(bus: bus, pin: CHIP_SELECT)
+spi_tester = SPITester.new(bus: bus, pin: SELECT_PIN)
 spi_tester.add_callback do |rx_bytes|
   # If MOSI and MISO are connected this should match TEST_DATA.
   # If not, should be 8 bytes of 255.
