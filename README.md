@@ -1,15 +1,16 @@
 # denko-piboard 0.14.0
 
-Use GPIO, I2C, SPI and PWM features of a Linux single-board-computer in Ruby. Low-level hardware support is provided by [`lgpio`](https://github.com/denko-rb/lgpio), while device drivers and higher-level features come from [`denko`](https://github.com/denko-rb/denko). This gem brings it all together.
+Use GPIO, I2C, SPI and PWM features of a Linux single-board-computer in Ruby. Hardware support is provided by [`lgpio`](https://github.com/denko-rb/lgpio). Drivers and higher-level features come from [`denko`](https://github.com/denko-rb/denko). This gem brings them together.
 
 `Denko::PiBoard` (your SBC) becomes a drop-in replacement for `Denko::Board` (a microcontroller).
 
 ## Example
 ```ruby
-require 'denko/piboard'
-board = Denko::PiBoard.new
+# Example to turn a LED on when a button is held down, off when released.
 
-led = Denko::LED.new(board: board, pin: 260)
+require 'denko/piboard'
+board  = Denko::PiBoard.new
+led    = Denko::LED.new(board: board, pin: 260)
 button = Denko::DigitalIO::Button.new(board: board, pin: 259, mode: :input_pullup)
 
 # Callback fires when button is down (0)
@@ -47,7 +48,7 @@ sleep
   - [ ] > 1 interface
   - [x] WS2812 addressable LED via SPI MOSI
   - [ ] SPI Listeners from `denko`
-  - **Note**:  Set up the SPI interface to bind the `CS0` select pin, and no others. Pins bound to the SPI interface cannot be used for GPIO, and bindings cannot be changed without rebooting. `PiBoard` can use `CS0` (give the associated GPIO number) **OR** any arbitrary GPIO as a SPI device select pin.
+  - **Note**:  Let SPI interfaces bind the `CS0` select pin and no others. Bound select pins cannot be used as regular GPIO, and bindings cannot be changed without rebooting. `PiBoard` can use `CS0` (give the associated GPIO number) **OR** any arbitrary GPIO as a SPI select pin.
 - [ ] UART
 - [x] Ultrasonic Input (for HC-SR04 and similar)
 - [x] Pulse Sequence Input (for DHT enviro sensors and similar)
@@ -64,13 +65,13 @@ sleep
 #### Hardware
 
 :green_heart: Known working
-:red_heart: Awaiting testing
+:heart: Awaiting testing
 :question: Might work. No hardware
 
 |    Chip           | Status          | Products                               | Notes |
 | :--------         | :------:        | :----------------------                |------ |
 | Allwinner H618    | :green_heart:   | Orange Pi Zero 2W                      |
-| Rockchip RK3566   | :red_heart:     | Radxa Zero 3W, Radxa Rock 3C           |
+| Rockchip RK3566   | :heart:         | Radxa Zero 3W, Radxa Rock 3C           |
 | BCM2835           | :green_heart:   | Raspberry Pi 1, Raspberry Pi Zero (W)  |
 | BCM2836/7         | :question:      | Raspberry Pi 2                         |
 | BCM2837A0/B0      | :green_heart:   | Raspberry Pi 3                         |
@@ -82,12 +83,12 @@ sleep
 
 - Operating Systems:
   - DietPi (Bookworm)
-  - Raspberry Pi OS (Bookworm), kernel 6.6.47-v8+
+  - Raspberry Pi OS (Bookworm) | Kernel 6.6.47-v8+
 
 - Rubies:
   - Ruby 3.3.5 +YJIT
 
-**Note:** The latest Ruby possible with YJIT is always recommended for performance, but any 3.0+ should work.
+**Note:** The latest Ruby with YJIT is always recommended for performance, but any 3.0+ should work.
 
 ## Installation
 
@@ -110,8 +111,8 @@ gem install denko-piboard
 
 ## Hardware Configuration
 
-### 1. Enable PWM, I2C and SPI Devices
-PWM, I2C, and SPI may be disabled on your SBC by default. This varies by manufacturer and Linux distro. You need to figure out how to enable them on your machine.
+### 1. Enable I2C, SPI and PWM Devices
+I2C, SPI and PWM may be disabled on your SBC by default. This varies by manufacturer and Linux distro, but most distros include a config utility.
 
 For the Orange Pi Zero 2W specifically, running DietPi, I wrote a guide [here](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-5-enable-i2c-and-spi).
 
@@ -121,17 +122,17 @@ For Raspberry Pi SBCs, running Raspberry Pi OS, `sudo raspi-config` should have 
   - [Change Raspberry Pi I2C Bus Speed](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/) (Raspberry Spy)
   - [Raspberry Pi Pinout](https://pinout.xyz/)
 
-**Note:** Unlike microcontrollers used by the main gem, I2C frequency is set at boot time in Linux, and cannot be changed on a per-transmission basis.
+**Note:** I2C frequency is set at boot time in Linux, and cannot be changed on a per-transmission basis.
 
-**Note:** Again, unlike the microcontroller gem, pins bound to an I2C, SPI or UART interface cannot be used for Digital I/O at all.
+**Note:** Pins bound to an I2C, SPI or UART interface cannot be used for Digital I/O at all.
 
-**Note:** Once a hardware PWM channel is activated on a given pin, the GPIO associated with that pin cannot be used for Digital I/O until rebooting.
+**Note:** Once Hardware PWM is used on a given pin, that pin cannot be used for Digital I/O again, until reboot.
 
 ### 2. Get Permission
-By default, only the `root` user might have access to GPIO, I2C and SPI devices. If you don't want to run your Ruby scripts as `root`, [this section](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-6-get-permission) of my Orange Pi Zero 2W setup tutorial is broadly applicable. It should give your user permissions, regardless of SBC or Linux distro in use.
+By default, only `root` might have access to GPIO / I2C / SPI / PWM. If you don't want to run Ruby scripts as `root`, [this section](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-6-get-permission) of my Orange Pi tutorial should work for any setup.
 
 ## More Examples
-Some examples are [in this gem](examples), but examples from the [main gem](https://github.com/denko-rb/denko/tree/master/examples) can be modified to work too:
+There are Linux specific examples [here](examples), but [main gem examples](https://github.com/denko-rb/denko/tree/master/examples) can be modified to work too:
 
 1. Replace setup code:
   ```ruby
@@ -148,14 +149,10 @@ Some examples are [in this gem](examples), but examples from the [main gem](http
     board = Denko::PiBoard.new
   ```
 
-2. Update GPIO/pin numbers as needed.
+2. Update pin numbers as needed.
 
-3. Give I2C or SPI device details to `Denko::PiBoard.new` as needed. For example, if you want the `PiBoard` instance to use `/dev/i2c-2`, and the `SDA` pin for that device is `GPIO29`, initialize as follows:
-  ```
-    board = Denko::Board.new(i2c_devices: [{index: 2, sda: 29}])
-  ```
-  See I2C and SPI examples for more info.
+3. For hardware I2C, SPI and PWM to work, you must give a YAML map of your board as the only argument to `Denko::PiBoard.new`. See [this example](examples/board_maps/orange_pi_zero_2w.yml) for the Orange Pi Zero 2W, and modify to match your board.
 
-**Note:** Currently this gem, and the main `denko` gem, only support 1 each of I2C and SPI hardware devices.
+**Note:** Currently this gem and the main `denko` gem only support 1 each of I2C and SPI hardware interfaces.
 
 **Note:** Not everything in the main gem is implemented yet, nor can be implemented. See [Features](#features).
