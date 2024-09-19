@@ -1,31 +1,24 @@
 # denko-piboard 0.14.0
 
-## Linux SBC GPIO in Ruby
+Use GPIO, I2C, SPI and PWM features of a Linux single-board-computer in Ruby. Low-level hardware support is provided by [`lgpio`](https://github.com/denko-rb/lgpio), while device drivers and higher-level features come from [`denko`](https://github.com/denko-rb/denko). This gem brings it all together.
 
-This gem adds support for Linux GPIO, PWM, I2C, and SPI devices to the [`denko`](https://github.com/denko-rb/denko) gem. Unlike the main gem, peripherals are connected directly to a single board computer, such as a Raspberry Pi or Orange Pi, instead of a microcontroller attached to a computer.
-
-`Denko::PiBoard`, representing your SBC GPIO, is a drop-in replacement for `Denko::Board` (a microcontroller).
+`Denko::PiBoard` (your SBC) becomes a drop-in replacement for `Denko::Board` (a microcontroller).
 
 ## Example
 ```ruby
 require 'denko/piboard'
-
-# Board instance for the Pi.
 board = Denko::PiBoard.new
 
-# LED connected to GPIO 260.
 led = Denko::LED.new(board: board, pin: 260)
+button = Denko::DigitalIO::Button.new(board: board, pin: 259, mode: :input_pullup)
 
-# Momentary button connected to GPIO 259, using internal pullup.
-button = Denko::DigitalIO::Button.new(board: board, pin: 259, pullup: true)
-
-# Callback runs when button is down (0)
+# Callback fires when button is down (0)
 button.down do
   puts "Button down"
   led.on
 end
 
-# Callback runs when button is up (1)
+# Callback fires when button is up (1)
 button.up do
   puts "Button up"
   led.off
@@ -40,11 +33,11 @@ sleep
 - [x] Open Drain/Source
 - [x] Digital Read/Write
 - [x] Digital Listen (Alerts)
-  - Unlike the microcontroller gem, which polls as fast as 1ms, `lgpio` alerts are polled much faster.
-  - Unlike the microcontroller gem, this is unaffected by long-running calls, eg. Infrared or WS2812.
-  - Alerts are read from a FIFO queue that holds up to 65,536 alerts. Oldest alerts are lost first.
+  - Much faster than microcontroller 1ms polling
+  - Less affected by long-running calls compared to microcontrollers. Eg. Infrared or WS2812
+  - Alerts read from a FIFO queue of up to 65,536. Oldest alerts lost first.
 - [x] Software PWM Out (any pin)
-- [x] Hardware PWM Out (specific pins, vary by board and configuration)
+- [x] Hardware PWM Out (specific pins per board)
 - [x] Tone Out (via Software PWM or Hardware PWM)
 - [x] Servo (via Hardware PWM)
 - [x] Infrared Out (via Hardware PWM)
@@ -56,11 +49,11 @@ sleep
   - [ ] SPI Listeners from `denko`
   - **Note**:  Set up the SPI interface to bind the `CS0` select pin, and no others. Pins bound to the SPI interface cannot be used for GPIO, and bindings cannot be changed without rebooting. `PiBoard` can use `CS0` (give the associated GPIO number) **OR** any arbitrary GPIO as a SPI device select pin.
 - [ ] UART
+- [x] Ultrasonic Input (for HC-SR04 and similar)
+- [x] Pulse Sequence Input (for DHT enviro sensors and similar)
 - [x] Bit-Bang I2C
 - [ ] Bit-Bang SPI
-- [x] Ultrasonic Input (bit-banged, for HC-SR04 and similar)
-- [x] Pulse Sequence Input (bit-banged, for DHT-class enviro sensors)
-- [x] 1-Wire (bit-banged)
+- [x] Bit-Bang 1-Wire
 
 ### Incompatible Features From `denko`
 - EEPROM (Use the filesystem for persistence instead)
@@ -70,31 +63,35 @@ sleep
 
 #### Hardware
 
-:green_heart: Support verified
-:question: Should work, but not verified
+:green_heart: Known working
+:red_heart: Awaiting testing
+:question: Might work. No hardware
 
-|    Chip        | Status          | Products                               | Notes |
-| :--------      | :------:        | :----------------------                |------ |
-| Allwinner H618 | :green_heart:   | Orange Pi Zero 2 W                     |
-| BCM2835        | :green_heart:   | Raspberry Pi 1, Raspberry Pi Zero (W)  |
-| BCM2836/7      | :question:      | Raspberry Pi 2                         |
-| BCM2837A0/B0   | :green_heart:   | Raspberry Pi 3                         |
-| BCM2711        | :green_heart:   | Raspberry Pi 4, Raspberry Pi 400       |
-| BCM2710A1      | :green_heart:   | Raspberry Pi Zero 2W                   |
-| BCM2712        | :question:      | Raspberry Pi 5                         |
+|    Chip           | Status          | Products                               | Notes |
+| :--------         | :------:        | :----------------------                |------ |
+| Allwinner H618    | :green_heart:   | Orange Pi Zero 2W                      |
+| Rockchip RK3566   | :red_heart:     | Radxa Zero 3W, Radxa Rock 3C           |
+| BCM2835           | :green_heart:   | Raspberry Pi 1, Raspberry Pi Zero (W)  |
+| BCM2836/7         | :question:      | Raspberry Pi 2                         |
+| BCM2837A0/B0      | :green_heart:   | Raspberry Pi 3                         |
+| BCM2711           | :green_heart:   | Raspberry Pi 4, Raspberry Pi 400       |
+| BCM2710A1         | :green_heart:   | Raspberry Pi Zero 2W                   |
+| BCM2712           | :question:      | Raspberry Pi 5                         |
 
 #### Software
 
 - Operating Systems:
   - DietPi (Bookworm)
+  - Raspberry Pi OS (Bookworm), kernel 6.6.47-v8+
 
 - Rubies:
-  - Ruby 3.1.2 (system Ruby on DietPi)
-  - Ruby 3.3.2 (with and without YJIT)
+  - Ruby 3.3.5 +YJIT
+
+**Note:** The latest Ruby possible with YJIT is always recommended for performance, but any 3.0+ should work.
 
 ## Installation
 
-#### 1. Install lg C library
+#### 1. Install the lg C library
 ```shell
 sudo apt install swig python3-dev python3-setuptools
 
@@ -109,7 +106,7 @@ sudo make install
 ```shell
 gem install denko-piboard
 ```
-**Note:** `sudo` may be needed before `gem install` if using the system ruby.
+**Note:** `sudo` may be needed before `gem install` if using the system Ruby.
 
 ## Hardware Configuration
 
@@ -162,9 +159,3 @@ Some examples are [in this gem](examples), but examples from the [main gem](http
 **Note:** Currently this gem, and the main `denko` gem, only support 1 each of I2C and SPI hardware devices.
 
 **Note:** Not everything in the main gem is implemented yet, nor can be implemented. See [Features](#features).
-
-### Dependencies
-
-- [lg](https://github.com/joan2937/lg) C library
-- [lgpio](https://github.com/denko-rb/lgpio) gem with Ruby bindings for C library
-- [denko](https://github.com/denko-rb/denko) for main implementation
