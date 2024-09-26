@@ -5,7 +5,7 @@ module Denko
     PIN_MODES = INPUT_MODES + OUTPUT_MODES
 
     # CMD = 0
-    def set_pin_mode(pin, mode=:input)
+    def set_pin_mode(pin, mode=:input, options={})
       # Is the mode valid?
       unless PIN_MODES.include?(mode)
         raise ArgumentError, "cannot set mode: #{mode}. Should be one of: #{PIN_MODES.inspect}"
