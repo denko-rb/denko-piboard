@@ -43,7 +43,7 @@ sleep
 - [x] Servo (via Hardware PWM)
 - [x] Infrared Out (via Hardware PWM)
 - [x] Hardware I2C
-  - [ ] > 1 interface
+  - [x] Multiple interfaces. Give `index: N` to `#new`, where N is from `/dev/i2c-N`.
 - [x] Hardware SPI
   - [ ] > 1 interface
   - [x] WS2812 addressable LED via SPI MOSI

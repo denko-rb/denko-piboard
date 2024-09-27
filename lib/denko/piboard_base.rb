@@ -36,17 +36,6 @@ module Denko
       end
       @hardware_pwms = {}
 
-      # i2cs validation
-      @i2cs = map[:i2cs] || {}
-      @i2cs.each do |dev, gpios|
-        raise ArgumentError, "invalid index i2c: #{dev}. Should be Integer" if dev.class != Integer
-        raise ArgumentError, "missing scl GPIO for i2c#{dev}" unless @i2cs[dev][:scl]
-        raise ArgumentError, "missing sda GPIO for i2c#{dev}" unless @i2cs[dev][:sda]
-        gpios.each do |name, gpio|
-          raise ArgumentError, "invalid Integer pin for #{name} in i2c#{dev}" if gpio.class != Integer
-        end
-      end
-
       # spis validation
       @spis = map[:spis] || {}
       @spis.each do |dev, gpios|

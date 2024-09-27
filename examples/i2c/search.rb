@@ -4,9 +4,8 @@ require 'denko/piboard'
 board_map = File.join(File.dirname(__FILE__), "../board_maps/orange_pi_zero_2w.yml")
 board = Denko::PiBoard.new(board_map)
 
-# We also need to tell the I2C bus what its SDA pin is.
-sda_pin = board.i2cs.values.first[:sda]
-bus = Denko::I2C::Bus.new(board: board, pin: sda_pin)
+# index: corresponds to Linux I2C device. /dev/i2c-5 in this case.
+bus = Denko::I2C::Bus.new(board: board, index: 5)
 
 bus.search
 
