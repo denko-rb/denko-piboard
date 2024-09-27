@@ -11,28 +11,22 @@ module Denko
         raise ArgumentError, "cannot set mode: #{mode}. Should be one of: #{PIN_MODES.inspect}"
       end
 
-      # IF PWM output requested, and GPIO has hardware PWM channel, use it.
-      if (mode == :output_pwm) && pwmchip_and_channel_from_pin(pin)
-        return hardware_pwm_from_pin(pin)
+      # IF :pwm_output or :output requested, and pin is hardware PWM, use that.
+      if pwmchip_and_channel_from_pin(pin)
+        if (mode == :output_pwm)
+          return hardware_pwm_from_pin(pin)
+        elsif (mode == :output)
+          puts "WARNING: using hardware PWM on pin: #{pin} as GPIO. Performance is worse than a regular GPIO"
+          return hardware_pwm_from_pin(pin)
+        else
+          raise 'Pins multiplexed to hardware PWM cannot be used as GPIO'
+        end
       end
+
+      # Check if the pin overlaps with any I2C or SPI or UART and raise.
 
       # Attempt to free the pin.
       LGPIO.gpio_free(@gpio_handle, pin)
-
-      # Is the pin in use by the kernel? Hardware PWM counts too.
-      if ((LGPIO.gpio_get_mode(@gpio_handle, pin) & 0b1) == 1)
-        if pwmchip_and_channel_from_pin(pin)
-          if (mode == :output)
-            # Abstract digital I/O with 100% and 0% duty cycles.
-            puts "WARNING: using hardware PWM on pin: #{pin} as GPIO. Performance will be worse."
-            return hardware_pwm_from_pin(pin)
-          else
-            raise "pin: #{pin} is in hadrware PWM mode. Can only be :output or :output_pwm mode until reboot"
-          end
-        else
-          raise "pin: #{pin} in use by kernel (or does not exist). Cannot be used for GPIO"
-        end
-      end
 
       # Normal GPIO setup
       if OUTPUT_MODES.include?(mode)
