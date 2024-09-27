@@ -74,11 +74,11 @@ sleep
 |    Chip           | Status          | Products                               | Notes |
 | :--------         | :------:        | :----------------------                |------ |
 | Allwinner H618    | :green_heart:   | Orange Pi Zero 2W                      |
-| Rockchip RK3566   | :heart:         | Radxa Zero 3W, Radxa Rock 3C           |
+| Rockchip RK3566   | :green_heart:   | Radxa Zero 3W/E, Radxa Rock 3C         | Armbian, Kernel 6.1.75-vendor-rk35xx
 | BCM2835           | :green_heart:   | Raspberry Pi 1, Raspberry Pi Zero (W)  |
 | BCM2836/7         | :question:      | Raspberry Pi 2                         |
 | BCM2837A0/B0      | :green_heart:   | Raspberry Pi 3                         |
-| BCM2711           | :green_heart:   | Raspberry Pi 4, Raspberry Pi 400       |
+| BCM2711           | :green_heart:   | Raspberry Pi 4, Raspberry Pi 400       | Raspberry Pi OS, Kernel 6.6.47-v8+
 | BCM2710A1         | :green_heart:   | Raspberry Pi Zero 2W                   |
 | BCM2712           | :question:      | Raspberry Pi 5                         |
 
@@ -86,7 +86,8 @@ sleep
 
 - Operating Systems:
   - DietPi (Bookworm)
-  - Raspberry Pi OS (Bookworm) | Kernel 6.6.47-v8+
+  - Amrbian (Bookworm)
+  - Raspberry Pi OS (Bookworm)
 
 - Rubies:
   - Ruby 3.3.5 +YJIT
