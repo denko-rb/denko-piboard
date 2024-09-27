@@ -19,7 +19,7 @@ module Denko
           puts "WARNING: using hardware PWM on pin: #{pin} as GPIO. Performance is worse than a regular GPIO"
           return hardware_pwm_from_pin(pin)
         else
-          raise 'Pins multiplexed to hardware PWM cannot be used as GPIO'
+          raise "Pin: #{pin} is multiplexed to hardware PWM. It can only be used as :output or :output_pwm"
         end
       end
 
@@ -64,8 +64,11 @@ module Denko
 
     # CMD = 2
     def digital_read(pin)
-      return @hardware_pwms[pin].duty_percent if @hardware_pwms[pin]
-      state = LGPIO.gpio_read(@gpio_handle, pin)
+      if @hardware_pwms[pin]
+        state = @hardware_pwms[pin].duty_percent
+      else
+        state = LGPIO.gpio_read(@gpio_handle, pin)
+      end
       self.update(pin, state)
       return state
     end
