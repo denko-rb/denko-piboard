@@ -9,6 +9,10 @@ module Denko
       @i2c_mutex ||= Mutex.new
     end
 
+    def i2c_c_error(name, error, index, address)
+      raise StandardError, "lgpio C I2C #{name} error: #{error} for /dev/i2c-#{index} with address 0x#{address.to_s(16)}"
+    end
+
     def update_i2c(i2c_index, data)
       dev = hw_i2c_devs[i2c_index]
       dev.update(data) if dev
@@ -40,7 +44,9 @@ module Denko
         raise ArgumentError, "can't write more than #{i2c_limit} bytes to I2C" if bytes.length > i2c_limit
 
         i2c_open(i2c_index, address)
-        LGPIO.i2c_write_device(i2c_handle, bytes)
+        result = LGPIO.i2c_write_device(i2c_handle, bytes)
+        i2c_c_error("write", result, i2c_index, address) if result < 0
+
         i2c_close
       end
     end
@@ -51,7 +57,11 @@ module Denko
         raise ArgumentError, "can't read more than #{i2c_limit} bytes to I2C" if read_length > i2c_limit
 
         i2c_open(i2c_index, address)
-        LGPIO.i2c_write_device(i2c_handle, register) if register
+        if register
+          result = LGPIO.i2c_write_device(i2c_handle, register)
+          i2c_c_error("register write (in read)", result, i2c_index, address) if result < 0
+        end
+
         bytes = LGPIO.i2c_read_device(i2c_handle, read_length)
         i2c_close
 
@@ -60,7 +70,7 @@ module Denko
           if bytes == -42
             message = nil
           else
-            raise "lgpio C I2C error: #{bytes}"
+            i2c_c_error("read", bytes, i2c_index, address)
           end
         else
           # Format bytes like denko expects from a microcontroller.
@@ -76,7 +86,7 @@ module Denko
 
     def i2c_open(index, address, flags=0x00)
       @i2c_handle = LGPIO.i2c_open(index, address, flags)
-      raise StandardError, "Could not open I2C device with index #{index}" if @i2c_handle < 0
+      i2c_c_error("open", @i2c_handle, index, address) if @i2c_handle < 0
     end
 
     def i2c_close
