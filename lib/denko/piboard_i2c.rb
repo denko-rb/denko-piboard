@@ -18,8 +18,6 @@ module Denko
           found_string << "#{address}:" if bytes[0] > 0
           i2c_close(handle)
         end
-        # Remove trailing colon.
-        found_string.chop! unless found_string.empty?
 
         update_i2c(index, found_string)
       end
@@ -45,7 +43,7 @@ module Denko
         handle = i2c_open(index, address)
         if register
           result = LGPIO.i2c_write_device(handle, register)
-          i2c_c_error("register write (in read)", result, index, address) if result < 0
+          i2c_c_error("read (register write)", result, index, address) if result < 0
         end
 
         bytes = LGPIO.i2c_read_device(handle, read_length)
