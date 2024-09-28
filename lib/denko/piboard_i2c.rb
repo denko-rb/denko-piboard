@@ -51,18 +51,10 @@ module Denko
 
         bytes = LGPIO.i2c_read_device(handle, read_length)
         i2c_close(handle)
+        i2c_c_error("read", bytes, index, address) if bytes.class == Integer
 
-        # Some error. -42 means read failed, so just return nil.
-        if bytes.class == Integer
-          if bytes == -42
-            message = nil
-          else
-            i2c_c_error("read", bytes, index, address)
-          end
-        else
-          # Format bytes like denko expects from a microcontroller.
-          message = "#{address}-#{bytes.join(",")}"
-        end
+        # Format bytes like denko expects from a microcontroller.
+        message = "#{address}-#{bytes.join(",")}"
 
         # Update the bus as if message came from microcontroller.
         update_i2c(index, message)
