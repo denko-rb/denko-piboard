@@ -32,9 +32,8 @@ module Denko
 
         handle = i2c_open(index, address)
         result = LGPIO.i2c_write_device(handle, bytes)
-        i2c_c_error("write", result, index, address) if result < 0
-
         i2c_close(handle)
+        i2c_c_error("write", result, index, address) if result < 0
       end
     end
 
@@ -76,7 +75,10 @@ module Denko
     end
 
     def i2c_close(handle)
-      LGPIO.i2c_close(handle)
+      result = LGPIO.i2c_close(handle)
+      if result < 0
+        raise StandardError, "lgpio C I2C close error: #{result} for /dev/i2c-#{index}"
+      end
     end
 
     def i2c_c_error(name, error, index, address)
