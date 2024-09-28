@@ -53,11 +53,9 @@ module Denko
         i2c_close(handle)
         i2c_c_error("read", bytes, index, address) if bytes.class == Integer
 
-        # Format bytes like denko expects from a microcontroller.
-        message = "#{address}-#{bytes.join(",")}"
-
-        # Update the bus as if message came from microcontroller.
-        update_i2c(index, message)
+        # Prepend the address (0th element) to the data, and update the bus.
+        bytes.unshift(address)
+        update_i2c(index, bytes)
       end
     end
 
