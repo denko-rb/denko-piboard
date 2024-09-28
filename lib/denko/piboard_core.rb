@@ -11,63 +11,65 @@ module Denko
         raise ArgumentError, "cannot set mode: #{mode}. Should be one of: #{PIN_MODES.inspect}"
       end
 
-      # IF :pwm_output or :output requested, and pin is hardware PWM, use that.
-      if pwmchip_and_channel_from_pin(pin)
+      # If pin is bound to hardware PWM, allow it to be used as :output_pwm. OR :output.
+      if map[:pwms][pin]
         if (mode == :output_pwm)
           return hardware_pwm_from_pin(pin)
         elsif (mode == :output)
-          puts "WARNING: using hardware PWM on pin: #{pin} as GPIO. Performance is worse than a regular GPIO"
+          puts "WARNING: using hardware PWM on pin #{pin} as GPIO. Will be slower than regular GPIO."
           return hardware_pwm_from_pin(pin)
         else
-          raise "Pin: #{pin} is multiplexed to hardware PWM. It can only be used as :output or :output_pwm"
+          raise "Pin #{pin} is bound to hardware PWM. It can only be used as :output or :output_pwm"
         end
       end
 
-      # Check if the pin overlaps with any I2C or SPI or UART and raise.
-
       # Attempt to free the pin.
-      LGPIO.gpio_free(@gpio_handle, pin)
+      LGPIO.gpio_free(*gpio_tuple(pin))
 
-      # Normal GPIO setup
+      # Try to claim the GPIO.
       if OUTPUT_MODES.include?(mode)
         flags  = LGPIO::SET_PULL_NONE
         flags  = LGPIO::SET_OPEN_DRAIN  if mode == :output_open_drain
         flags  = LGPIO::SET_OPEN_SOURCE if mode == :output_open_source
-        result = LGPIO.gpio_claim_output(@gpio_handle, flags, pin, LOW)
+        result = LGPIO.gpio_claim_output(*gpio_tuple(pin), flags, LOW)
       else
         flags  = LGPIO::SET_PULL_NONE
         flags  = LGPIO::SET_PULL_UP   if mode == :input_pullup
         flags  = LGPIO::SET_PULL_DOWN if mode == :input_pulldown
-        result = LGPIO.gpio_claim_input(@gpio_handle, flags, pin)
+        result = LGPIO.gpio_claim_input(*gpio_tuple(pin), flags)
       end
-      raise "could not claim GPIO #{pin}. LGPIO error: #{result}" if result < 0
+      raise "could not claim GPIO for pin #{pin}. lgpio C error: #{result}" if result < 0
 
-      # Cache these in case another method needs to reset the pin.
-      @pin_configs[pin] = @pin_configs[pin].to_h.merge(mode: mode)
+      # Save mode in case another method needs to reset the pin.
+      pin_configs[pin] = pin_configs[pin].to_h.merge(mode: mode)
     end
 
     def set_pin_debounce(pin, debounce_time)
       return unless debounce_time
-      result = LGPIO.gpio_set_debounce(@gpio_handle, pin, debounce_time)
-      raise "could not set debounce for GPIO #{pin}. LGPIO error: #{result}" if result < 0
-      @pin_configs[pin] = @pin_configs[pin].to_h.merge(debounce_time: debounce_time)
+      result = LGPIO.gpio_set_debounce(*gpio_tuple(pin), debounce_time)
+      raise "could not set debounce for pin #{pin}. lgpio C error: #{result}" if result < 0
+      pin_configs[pin] = pin_configs[pin].to_h.merge(debounce_time: debounce_time)
     end
 
     # CMD = 1
     def digital_write(pin, value)
-      if @hardware_pwms[pin]
-        @hardware_pwms[pin].duty_percent = (value == 0) ? 0 : 100
+      if hardware_pwms[pin]
+        hardware_pwms[pin].duty_percent = (value == 0) ? 0 : 100
       else
-        LGPIO.gpio_write(@gpio_handle, pin, value)
+        # Much faster than splatting the tuple.
+        handle, line = gpio_tuple(pin)
+        LGPIO.gpio_write(handle, line, value)
       end
     end
 
     # CMD = 2
     def digital_read(pin)
-      if @hardware_pwms[pin]
-        state = @hardware_pwms[pin].duty_percent
+      if hardware_pwms[pin]
+        state = hardware_pwms[pin].duty_percent
       else
-        state = LGPIO.gpio_read(@gpio_handle, pin)
+        # Much faster than splatting the tuple.
+        handle, line = gpio_tuple(pin)
+        state = LGPIO.gpio_read(handle, line)
       end
       self.update(pin, state)
       return state
@@ -75,11 +77,13 @@ module Denko
 
     # CMD = 3
     def pwm_write(pin, duty)
-      if @hardware_pwms[pin]
-        @hardware_pwms[pin].frequency    = 1000
-        @hardware_pwms[pin].duty_percent = duty
+      if hardware_pwms[pin]
+        hardware_pwms[pin].frequency    = 1000
+        hardware_pwms[pin].duty_percent = duty
       else
-        LGPIO.tx_pwm(@gpio_handle, pin, 1000, duty, 0, 0)
+        # Much faster than splatting the tuple.
+        handle, line = gpio_tuple(pin)
+        LGPIO.tx_pwm(handle, line, 1000, duty, 0, 0)
       end
     end
 
@@ -107,10 +111,10 @@ module Denko
       end
 
       # Only way to stop getting alerts is to free the GPIO.
-      LGPIO.gpio_free(@gpio_handle, pin)
+      LGPIO.gpio_free(*gpio_tuple(pin))
 
       # Reclaim it as input if needed.
-      config   = @pin_configs[pin]
+      config   = pin_configs[pin]
       config ||= { mode: :input, debounce_time: nil } if state == :on
       if config
         set_pin_mode(pin, config[:mode])
@@ -118,7 +122,7 @@ module Denko
       end
 
       if state == :on
-        LGPIO.gpio_claim_alert(@gpio_handle, 0, LGPIO::BOTH_EDGES, pin)
+        LGPIO.gpio_claim_alert(*gpio_tuple(pin), 0, LGPIO::BOTH_EDGES)
         start_alert_thread unless @alert_thread
       end
     end
@@ -131,19 +135,17 @@ module Denko
       set_listener(pin, :off)
     end
 
-    def start_gpio_reports
-      return if @reporting_started
-      LGPIO.gpio_start_reporting
-      @reporting_started = true
-    end
-
     def start_alert_thread
       start_gpio_reports
       @alert_thread = Thread.new do
         loop do
           report = LGPIO.gpio_get_report
           if report
-            update(report[:gpio], report[:level])
+            if chip = alert_lut[report[:chip]]
+              if pin = chip[report[:gpio]]
+                update(pin, report[:level])
+              end
+            end
           else
             sleep 0.001
           end
@@ -154,6 +156,16 @@ module Denko
     def stop_alert_thread
       Thread.kill(@alert_thread) if @alert_thread
       @alert_thread = nil
+    end
+
+    def start_gpio_reports
+      return if @reporting_started
+      LGPIO.gpio_start_reporting
+      @reporting_started = true
+    end
+
+    def pin_configs
+      @pin_configs ||= []
     end
   end
 end

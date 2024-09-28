@@ -1,0 +1,106 @@
+#
+# Testing board map for a Radxa Zero 3W running Armbian with 6.1 kernel.
+#
+---
+overlays_enabled:
+  - pwm8-m0
+  - pwm9-m0
+  - pwm14-m0
+  - i2c5-m0
+  - spi3-m1-cs0-spidev
+
+pins:
+  # Left side (odd numbered)
+  # PIN 1 is 3V3
+  32: { phy: 3, chip: 1, line: 0 }
+  33: { phy: 5, chip: 1, line: 1 }
+  116: { phy: 7, chip: 3, line: 20 }
+  # PIN 9 is GND
+  97: { phy: 11, chip: 3, line: 1 }
+  98: { phy: 13, chip: 3, line: 2 }
+  104: { phy: 15, chip: 3, line: 8 }
+  # PIN 17 is 3V3
+  147: { phy: 19, chip: 4, line: 19 }
+  149: { phy: 21, chip: 4, line: 21 }
+  146: { phy: 23, chip: 4, line: 18 }
+  # PIN 25 is GND
+  138: { phy: 27, chip: 4, line: 10 }
+  107: { phy: 29, chip: 3, line: 11 }
+  108: { phy: 31, chip: 3, line: 12 }
+  115: { phy: 33, chip: 3, line: 19 }
+  100: { phy: 35, chip: 3, line: 4 }
+  36: { phy: 37, chip: 1, line: 4 }
+  # PIN 39 is GND
+
+  # Right side (even numbered)
+  # PIN 2 is 5V
+  # PIN 4 is 5V
+  # PIN 6 is GND
+  24: { phy: 8, chip: 0, line: 24 }
+  25: { phy: 10, chip: 0, line: 25 }
+  99: { phy: 12, chip: 3, line: 3 }
+  # PIN 14 is GND
+  105: { phy: 16, chip: 3, line: 9 }
+  106: { phy: 18, chip: 3, line: 10 }
+  # PIN 20 is GND
+  113: { phy: 22, chip: 3, line: 17 }
+  150: { phy: 24, chip: 4, line: 22 }
+  # PIN 26 is NC
+  139: { phy: 28, chip: 4, line: 11 }
+  # PIN 30 is GND
+  114: { phy: 32, chip: 3, line: 18 }
+  # PIN 34 is GND
+  103: { phy: 36, chip: 3, line: 7 }
+  102: { phy: 38, chip: 3, line: 6 }
+  101: { phy: 40, chip: 3, line: 5 }
+
+pwms:
+  105:
+    pwmchip: 0
+    channel: 0
+    overlay: pwm8-m0
+  106:
+    pwmchip: 1
+    channel: 0
+    overlay: pwm9-m0
+  116:
+    pwmchip: 2
+    channel: 0
+    overlay: pwm14-m0
+
+i2cs:
+  5:
+    scl: 107
+    sda: 108
+    overlay: i2c5-m0
+
+spis:
+  3:
+    clk: 146
+    mosi: 147
+    miso: 149
+    cs0: 150
+    overlay: spi3-m1-cs0-spidev
+
+uarts:
+  2:
+    tx: 25
+    rx: 24
+    overlay: uart2-m0
+    default_terminal: true
+  3:
+    tx: 33
+    rx: 32
+    overlay: uart3-m0
+  4:
+    tx: 106
+    rx: 105
+    overlay: uart4-m1
+  5:
+    tx: 114
+    rx: 115
+    overlay: uart5-m1
+  9:
+    tx: 149
+    rx: 150
+    overlay: uart9-m1

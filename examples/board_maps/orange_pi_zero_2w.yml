@@ -1,25 +1,76 @@
 #
-# This is for an Orange Pi Zero 2W running DietPi,
-# with these overlays enabled: spidev1_0 i2c1-pi
-#
-# PWM channels 1 and 2 work by default, but must be exported on boot.
-# Channels 3 and 4 require UART0 to be disabled in device tree.
+# This is for an Orange Pi Zero 2W running DietPi (kernel 6.6),
+# with these overlays: spidev1_0 i2c1-pi
+# PWM channels 1 and 2 work by default (no overlay). Must b exported on boot.
 #
 ---
-gpiochip: 0
-pwmchips:
-  0:
-    1: 227
-    2: 226
-    # 3: 224
-    # 4: 225
+overlays_enabled:
+  - i2c1-pi
+  - spidev1_0
+
+pins:
+  # Left side (odd numbered)
+  # PIN 1 is 3V3
+  264: { phy: 3, chip: 0, line: 264 }
+  263: { phy: 5, chip: 0, line: 263 }
+  269: { phy: 7, chip: 0, line: 269 }
+  # PIN 9 is GND
+  226: { phy: 11, chip: 0, line: 226 }
+  227: { phy: 13, chip: 0, line: 227 }
+  261: { phy: 15, chip: 0, line: 261 }
+  # PIN 17 is 3V3
+  231: { phy: 19, chip: 0, line: 231 }
+  232: { phy: 21, chip: 0, line: 232 }
+  230: { phy: 23, chip: 0, line: 230 }
+  # PIN 25 is GND
+  266: { phy: 27, chip: 0, line: 266 }
+  256: { phy: 29, chip: 0, line: 256 }
+  271: { phy: 31, chip: 0, line: 271 }
+  268: { phy: 33, chip: 0, line: 268 }
+  258: { phy: 35, chip: 0, line: 258 }
+  272: { phy: 37, chip: 0, line: 272 }
+  # PIN 39 is GND
+
+  # Right side (even numbered)
+  # PIN 2 is 5V
+  # PIN 4 is 5V
+  # PIN 6 is GND
+  224: { phy: 8, chip: 0, line: 224 }
+  225: { phy: 10, chip: 0, line: 225 }
+  257: { phy: 12, chip: 0, line: 257 }
+  # PIN 14 is GND
+  270: { phy: 16, chip: 0, line: 270 }
+  228: { phy: 18, chip: 0, line: 228 }
+  # PIN 20 is GND
+  262: { phy: 22, chip: 0, line: 262 }
+  229: { phy: 24, chip: 0, line: 229 }
+  233: { phy: 6, chip: 0, line: 233 }
+  265: { phy: 28, chip: 0, line: 265 }
+  # PIN 30 is GND
+  267: { phy: 32, chip: 0, line: 267 }
+  # PIN 34 is GND
+  76: { phy: 36, chip: 0, line: 76 }
+  260: { phy: 38, chip: 0, line: 260 }
+  259: { phy: 40, chip: 0, line: 259 }
+
+pwms:
+  227:
+    pwmchip: 0
+    channel: 1
+  226:
+    pwmchip: 0
+    channel: 2
+
 i2cs:
   3:
     scl: 263
     sda: 264
+    overlay: i2c1-pi
+
 spis:
   1:
-    sck: 230
+    clk: 230
     mosi: 231
     miso: 232
     cs0: 229
+    overlay: spidev1_0

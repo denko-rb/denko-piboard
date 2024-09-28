@@ -1,73 +1,39 @@
 require 'denko'
 require 'lgpio'
-require 'yaml'
 
 module Denko
   class PiBoard
+    include Behaviors::Subcomponents
+
     LOW      = 0
     HIGH     = 1
     PWM_HIGH = 100
     def low;      LOW;      end
     def high;     HIGH;     end
     def pwm_high; PWM_HIGH; end
+    def analog_write_resolution; 8; end
 
-    attr_reader :gpiochip, :pwmchips, :i2cs, :spis
-
-    def initialize(map_yaml=nil)
-      # If a YAML map isn't given, only try to access gpiochip0.
-      if map_yaml
-        map = YAML.load_file(map_yaml, symbolize_names: true)
-      else
-        map = {gpiochip: 0}
+    def initialize(map_yaml_file=nil)
+      map_yaml_file ||= Dir.home + "/" + DEFAULT_MAP_FILE
+      unless File.exist?(map_yaml_file)
+        raise StandardError, "board map file not given to PiBoard#new, and does not exist at #{map_yaml_file}"
       end
 
-      # gpiochip validation
-      @gpiochip = map[:gpiochip]
-      raise ArgumentError, "invalid gpiochip: #{@gpiochip} given. Must be Integer" if @gpiochip.class != Integer
+      parse_map(map_yaml_file)
+    end
 
-      # pwmchips validation
-      @pwmchips = map[:pwmchips] || {}
-      @pwmchips.each do |chip, channel_hash|
-        raise ArgumentError, "invalid index for pwmchip: #{chip}. Should be Integer" if chip.class != Integer
-        channel_hash.each do |chan, gpio|
-          raise ArgumentError, "invalid Integer: #{chan} in keys (channels) of pwm_chip#{chip}" if chan.class != Integer
-          raise ArgumentError, "invalid Integer: #{gpio} in values (GPIOs) of pwm_chip#{chip}" if gpio.class != Integer
-        end
-      end
-      @hardware_pwms = {}
+    # Store multiple LGPIO handles, since one board might have multiple chips.
+    def gpio_handle(index)
+      gpio_handles[index] ||= LGPIO.chip_open(index)
+    end
 
-      # spis validation
-      @spis = map[:spis] || {}
-      @spis.each do |dev, gpios|
-        raise ArgumentError, "invalid index for spi-dev: #{dev}. Should be Integer" if dev.class != Integer
-        raise ArgumentError, "missing sck GPIO for spidev-#{dev}" unless @spis[dev][:sck]
-        raise ArgumentError, "missing mosi GPIO for spidev-#{dev}" unless @spis[dev][:mosi]
-        raise ArgumentError, "missing miso GPIO for spidev-#{dev}" unless @spis[dev][:miso]
-        raise ArgumentError, "missing cs0 GPIO for spidev-#{dev}" unless @spis[dev][:cs0]
-        gpios.each do |name, gpio|
-          raise ArgumentError, "invalid Integer pin for #{name} in i2c#{dev}" if gpio.class != Integer
-        end
-      end
-
-      # Config state storage for pins.
-      @pin_configs = []
-
-      # This thread will receive alerts from the LGPIO process and call #update.
-      @alert_thread = nil
-      @reporting_started = false
-
-      # Immediately open the GPIO device
-      @gpio_handle = LGPIO.chip_open(@gpiochip)
+    def gpio_handles
+      @gpio_handles ||= []
     end
 
     def finish_write
-      LGPIO.chip_close(@gpio_handle)
+      gpio_handles.each { |h| LGPIO.chip_close(h) if h }
     end
-
-    #
-    # Use standard Subcomponents behavior.
-    #
-    include Behaviors::Subcomponents
 
     def update(pin, message)
       if single_pin_components[pin]
