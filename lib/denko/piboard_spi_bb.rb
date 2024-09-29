@@ -26,12 +26,12 @@ module Denko
       spi_bb
     end
 
-    def spi_bb_transfer(select_pin, clock:, input: nil, output: nil, write: [], read: 0, frequency: nil, mode: nil, bit_order: nil)
+    def spi_bb_transfer(select, clock:, input: nil, output: nil, write: [], read: 0, frequency: nil, mode: nil, bit_order: nil)
       interface = spi_bb_interface(clock, input, output)
+      select_hash = select ? { handle: gpio_tuple(select)[0], line: gpio_tuple(select)[0] } : nil
 
-      read_bytes = interface.transfer(write: write, read: read)
-      # Update with comma delimited byte string as if coming from microcontroller.
-      self.update(select_pin, read_bytes.join(",")) if read_bytes
+      bytes = interface.transfer(write: write, read: read, select: select_hash, order: bit_order, mode: mode)
+      self.update(select, bytes) if (read > 0 && select)
     end
   end
 end

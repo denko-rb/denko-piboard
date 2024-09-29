@@ -19,7 +19,7 @@ spi_tester = SPITester.new(bus: bus, pin: SELECT_PIN)
 spi_tester.add_callback do |rx_bytes|
   # If MOSI and MISO are connected this should match TEST_DATA.
   # If not, should be 8 bytes of 255.
-  puts "RX bytes: #{rx_bytes.split(",").map(&:to_i)}"
+  puts "RX bytes: #{rx_bytes.inspect}"
 end
 
 # Send the test data.
