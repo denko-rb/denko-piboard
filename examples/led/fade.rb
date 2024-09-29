@@ -1,11 +1,9 @@
 require 'denko/piboard'
 
+# Either a regular GPIO (uses software PWM) or a GPIO with a hardware PWM channel.
 PIN = 226
 
-# Create a board map for your SBC, so Denko can map hardware PWM channels to GPIOs.
-board_map = File.join(File.dirname(__FILE__), "board_maps/orange_pi_zero_2w.yml")
-
-board = Denko::PiBoard.new(board_map)
+board = Denko::PiBoard.new
 led = Denko::LED.new(board: board, pin: PIN)
 
 5.times do

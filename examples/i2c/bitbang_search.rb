@@ -1,8 +1,11 @@
+#
+# Search for connected devices on a bit-bang I2C bus.
+#
 require 'denko/piboard'
 
 SCL   = 228
 SDA   = 270
-board = Denko::PiBoard.new()
+board = Denko::PiBoard.new
 bus   = Denko::I2C::BitBang.new(board: board, pins: {scl: SCL, sda: SDA})
 
 bus.search

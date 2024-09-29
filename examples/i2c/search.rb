@@ -1,11 +1,11 @@
+#
+# Search for connected devices on a hardware I2C bus.
+#
 require 'denko/piboard'
 
-# Create a board map for your SBC, so Denko can map I2C pins to GPIOs.
-board_map = File.join(File.dirname(__FILE__), "../board_maps/orange_pi_zero_2w.yml")
-board = Denko::PiBoard.new(board_map)
-
-# index: corresponds to Linux I2C device. /dev/i2c-5 in this case.
-bus = Denko::I2C::Bus.new(board: board, index: 5)
+board = Denko::PiBoard.new
+# index: corresponds to Linux I2C device number. /dev/i2c-3 in this case.
+bus = Denko::I2C::Bus.new(board: board, index: 3)
 
 bus.search
 

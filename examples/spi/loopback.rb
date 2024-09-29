@@ -3,10 +3,7 @@ require 'denko/piboard'
 
 CHIP_SELECT = 229
 
-# Create a board map for your SBC, so Denko can map I2C pins to GPIOs.
-board_map = File.join(File.dirname(__FILE__), "../board_maps/orange_pi_zero_2w.yml")
-board = Denko::PiBoard.new(board_map)
-
+board = Denko::PiBoard.new
 bus = Denko::SPI::Bus.new(board: board)
 
 TEST_DATA = [0, 1, 2, 3, 4, 5, 6, 7]

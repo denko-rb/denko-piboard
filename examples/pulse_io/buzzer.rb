@@ -1,11 +1,12 @@
+#
+# Play a melody on a piezoelectric buzzer using hardware PWM.
+# This will use software PWM if given a regular GPIO, but won't be as good.
+#
 require 'denko/piboard'
 
-PIN = 226
+PIN = 227
 
-# Create a board map for your SBC, so Denko can map hardware PWM channels to GPIOs.
-board_map = File.join(File.dirname(__FILE__), "board_maps/orange_pi_zero_2w.yml")
-
-board = Denko::PiBoard.new(board_map)
+board = Denko::PiBoard.new
 buzzer = Denko::PulseIO::Buzzer.new(board: board, pin: PIN)
 
 C4 = 262

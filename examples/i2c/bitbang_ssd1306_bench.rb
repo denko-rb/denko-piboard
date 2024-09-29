@@ -6,10 +6,9 @@ PATTERN_2   = [64] + Array.new(1024) { 0b11001100 }
 
 SCL   = 228
 SDA   = 270
-board = Denko::PiBoard.new()
+board = Denko::PiBoard.new
 bus   = Denko::I2C::BitBang.new(board: board, pins: {scl: SCL, sda: SDA})
 oled  = Denko::Display::SSD1306.new(bus: bus, rotate: true)
-
 
 FRAME_COUNT = 400
 start = Time.now

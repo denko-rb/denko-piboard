@@ -1,11 +1,12 @@
+#
+# Send remote control infrared signals.
+#
 require 'denko/piboard'
 
+# Must be assigned to a hardware PWM channel in your board map.
 PIN = 226
 
-# Create a board map for your SBC, so Denko can map hardware PWM channels to GPIOs.
-board_map = File.join(File.dirname(__FILE__), "board_maps/orange_pi_zero_2w.yml")
-
-board = Denko::PiBoard.new(board_map)
+board = Denko::PiBoard.new
 ir = Denko::PulseIO::IRTransmitter.new(board: board, pin: PIN)
 
 # NEC Raw-Data=0xF708FB04. LSBFIRST, so the binary for each hex digit below is backward.
