@@ -13,7 +13,7 @@ module Denko
 
     # CMD = 11
     def servo_write(pin, value=0)
-      @hardware_pwms[pin].duty_us = value
+      hardware_pwms[pin].duty_us = value
     end
   end
 end
