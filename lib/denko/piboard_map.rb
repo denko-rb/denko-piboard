@@ -79,7 +79,7 @@ module Denko
     end
 
     def convert_pin(pin)
-      pin = pin.to_i
+      pin.to_i if pin
     end
   end
 end
