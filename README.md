@@ -45,10 +45,10 @@ sleep
 - [x] Hardware I2C
   - [x] Multiple interfaces. Give `index: N` to `#new`, where N is from `/dev/i2c-N`.
 - [x] Hardware SPI
-  - [ ] > 1 interface
+  - [x] Multiple interfaces. Give `index: N` to `#new`, where N is from `/dev/spidevN.0`.
   - [x] WS2812 addressable LED via SPI MOSI
   - [ ] SPI Listeners from `denko`
-  - **Note**:  Let SPI interfaces bind the `CS0` select pin and no others. Bound select pins cannot be used as regular GPIO, and bindings cannot be changed without rebooting. `PiBoard` can use `CS0` (give the associated GPIO number) **OR** any arbitrary GPIO as a SPI select pin.
+  - **Note**: SPI devices should only bind the `CS0` select pin. Binding more excludes them from use as regular GPIO without unbinding and rebooting. `PiBoard` can use any GPIO as a SPI select pin.
 - [ ] UART
 - [x] Ultrasonic Input (for HC-SR04 and similar)
 - [x] Pulse Sequence Input (for DHT enviro sensors and similar)

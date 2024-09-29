@@ -75,7 +75,7 @@ module Denko
     def i2c_close(handle)
       result = LGPIO.i2c_close(handle)
       if result < 0
-        raise StandardError, "lgpio C I2C close error: #{result} for /dev/i2c-#{index}"
+        raise StandardError, "lgpio C I2C close error: #{result} for handle #{handle}"
       end
     end
 

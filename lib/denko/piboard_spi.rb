@@ -11,65 +11,62 @@ module Denko
     end
 
     # CMD = 26
-    def spi_transfer(select_pin, write:[], read:0, frequency: 1_000_000, mode: 0, bit_order: nil)
-      # Default to 1Mhz frequency.
+    def spi_transfer(index, select, write:[], read:0, frequency: 1_000_000, mode: 0, bit_order: nil)
+      # Default frequency. Flags just has mode.
       frequency ||= 1_000_000
+      flags       = spi_flags(mode)
+      handle      = spi_open(index, frequency, flags)
 
-      # Make SPI flags mask.
-      flags = spi_flags(mode)
+      # Handle select_pin unless it's same as CS0 for this interface.
+      digital_write(select, 0) if select && (select != map[:spis][index][:cs0])
+      bytes = LGPIO.spi_xfer(handle, write)
+      spi_close(handle)
+      digital_write(select, 1) if select && (select != map[:spis][index][:cs0])
 
-      # Open SPI handle.
-      spi_open(@spis.keys.first, 0, frequency, flags)
+      spi_c_error("xfer", bytes, index) if bytes.class == Integer
 
-      # Pull select_pin low unless it's 255 (no select pin) or CS0 (interface will do it).
-      unless [@spis.values.first[:cs0], 255].include? select_pin
-        digital_write(select_pin, 0) unless select_pin == 255
-      end
-
-      # Do the SPI transfer.
-      read_bytes = LGPIO.spi_xfer(@spi_handle, write)
-
-      # Close SPI handle.
-      spi_close
-
-      # Put select_pin back high if needed.
-      unless [@spis.values.first[:cs0], 255].include? select_pin
-        digital_write(select_pin, 1) unless select_pin == 255
-      end
-
-      # Handle spi_xfer errors.
-      raise StandardError, "spi_xfer error, code #{read_bytes}" if read_bytes.class == Integer
-
-       # If reading bytes, call #update as if coming from select_pin.
-      if read > 0
-        message = read_bytes.take(read).join(",")
-        self.update(select_pin, message)
-      end
+      # Update component attached to select pin with read bytes.
+      self.update(select, bytes) if (read > 0 && select)
     end
 
     # CMD = 27
-    def spi_listen
+    def spi_listen(*arg, **kwargs)
     end
 
     # CMD = 28
-    def spi_stop
-    end
-
-    private
-
-    def spi_open(index, channel, frequency, flags=0x00)
-      # Give SPI channel as 0 (SPI CS0), even though we are toggling chip enable separately.
-      @spi_handle = LGPIO.spi_open(index, channel, frequency, flags)
-      raise StandardError, "SPI error, code #{@spi_handle}" if @spi_handle < 0
-    end
-
-    def spi_close
-      LGPIO.spi_close(@spi_handle)
-      @spi_handle  = nil
+    def spi_stop(pin)
     end
 
     def spi_listeners
       @spi_listeners ||= Array.new
+    end
+
+    private
+
+    def spi_mutex(index)
+      spi_mutexes[index] ||= Mutex.new
+    end
+
+    def spi_mutexes
+      @spi_mutexes ||= []
+    end
+
+    def spi_open(index, frequency, flags=0x00)
+      # Always use 0 (SPI CS0) for channel. We are toggling chip enable separately.
+      handle = LGPIO.spi_open(index, 0, frequency, flags)
+      spi_c_error("open", handle, index) if handle < 0
+      handle
+    end
+
+    def spi_close(handle)
+      result = LGPIO.spi_close(handle)
+      if result < 0
+        raise StandardError, "lgpio C SPI close error: #{result} for handle #{handle}"
+      end
+    end
+
+    def spi_c_error(name, error, index)
+      raise StandardError, "lgpio C SPI #{name} error: #{error} for /dev/spidev#{index}"
     end
   end
 end
