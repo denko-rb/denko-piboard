@@ -84,7 +84,7 @@ module Denko
     end
 
     def update_i2c(index, data)
-      dev = hw_i2c_devs[index]
+      dev = hw_i2c_comps[index]
       dev.update(data) if dev
     end
   end
