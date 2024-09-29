@@ -10,7 +10,7 @@ BLUE   = [0, 0, 255]
 WHITE  = [255, 255, 255]
 COLORS = [RED, GREEN, BLUE, WHITE]
 
-WS2812_PIN = 231
+MOSI_PIN = 231
 PIXELS = 8
 
 # Move along the strip and back, one pixel at a time.
@@ -18,9 +18,10 @@ positions = (0..PIXELS-1).to_a + (1..PIXELS-2).to_a.reverse
 
 board = Denko::PiBoard.new
 
-# On PiBoard, WS2812 only (for now) uses the MOSI pin of the first
-# :spi interface defined in your board map.
-strip = Denko::LED::WS2812.new(board: board, pin: length: PIXELS)
+# On PiBoard, WS2812 must use a hardware Denko::SPI instance as its "board".
+# It outputs on the SPI interface's MOSI pin.
+bus = Denko::SPI::Bus.new(board: board, index: 1)
+strip = Denko::LED::WS2812.new(board: bus, pin: MOSI_PIN, length: PIXELS)
 
 loop do
   COLORS.each do |color|
