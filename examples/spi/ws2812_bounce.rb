@@ -16,9 +16,7 @@ PIXELS = 8
 # Move along the strip and back, one pixel at a time.
 positions = (0..PIXELS-1).to_a + (1..PIXELS-2).to_a.reverse
 
-# Create a board map for your SBC, so Denko can map hardware SPI pins to GPIOs.
-board_map = File.join(File.dirname(__FILE__), "board_maps/orange_pi_zero_2w.yml")
-board = Denko::PiBoard.new(board_map)
+board = Denko::PiBoard.new
 strip = Denko::LED::WS2812.new(board: board, pin: WS2812_PIN, length: PIXELS)
 
 loop do
