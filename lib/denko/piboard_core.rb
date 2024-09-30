@@ -78,7 +78,6 @@ module Denko
     # CMD = 3
     def pwm_write(pin, duty)
       if hardware_pwms[pin]
-        hardware_pwms[pin].frequency    = 1000
         hardware_pwms[pin].duty_percent = duty
       else
         # Much faster than splatting the tuple.
