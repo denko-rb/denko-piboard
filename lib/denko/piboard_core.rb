@@ -40,14 +40,14 @@ module Denko
       end
       raise "could not claim GPIO for pin #{pin}. lgpio C error: #{result}" if result < 0
 
-      # Save mode in case another method needs to reset the pin.
-      pin_configs[pin] = pin_configs[pin].to_h.merge(mode: mode)
+      pin_configs[pin] = pin_configs[pin].to_h.merge(mode: mode).merge(options)
     end
 
     def set_pin_debounce(pin, debounce_time)
       return unless debounce_time
       result = LGPIO.gpio_set_debounce(*gpio_tuple(pin), debounce_time)
       raise "could not set debounce for pin #{pin}. lgpio C error: #{result}" if result < 0
+
       pin_configs[pin] = pin_configs[pin].to_h.merge(debounce_time: debounce_time)
     end
 
@@ -56,7 +56,6 @@ module Denko
       if hardware_pwms[pin]
         hardware_pwms[pin].duty_percent = (value == 0) ? 0 : 100
       else
-        # Much faster than splatting the tuple.
         handle, line = gpio_tuple(pin)
         LGPIO.gpio_write(handle, line, value)
       end
@@ -67,7 +66,6 @@ module Denko
       if hardware_pwms[pin]
         state = hardware_pwms[pin].duty_percent
       else
-        # Much faster than splatting the tuple.
         handle, line = gpio_tuple(pin)
         state = LGPIO.gpio_read(handle, line)
       end
@@ -80,9 +78,9 @@ module Denko
       if hardware_pwms[pin]
         hardware_pwms[pin].duty_percent = duty
       else
-        # Much faster than splatting the tuple.
+        frequency    = pin_configs[pin][:frequency] || 1000
         handle, line = gpio_tuple(pin)
-        LGPIO.tx_pwm(handle, line, 1000, duty, 0, 0)
+        LGPIO.tx_pwm(handle, line, frequency, duty, 0, 0)
       end
     end
 
