@@ -4,15 +4,23 @@ module Denko
       @hardware_pwms ||= []
     end
 
-    def hardware_pwm_from_pin(pin)
+    def hardware_pwm_from_pin(pin, options={})
+      # Find existing hardware PWM, change the frequency if needed, then return it.
+      frequency = options[:frequency]
       pwm = hardware_pwms[pin]
-      return pwm if pwm
+      if pwm
+        pwm.frequency = frequency if (frequency && pwm.frequency != frequency)
+        return pwm
+      end
 
-      raise StandardError, "no PWM device in board map for pin #{pin}" unless map[:pwms][pin]
+      # Make sure it's in the board map before trying to use it.
+      raise StandardError, "no hardware PWM in board map for pin #{pin}" unless map[:pwms][pin]
 
+      # Make a new hardware PWM.
       pwmchip = map[:pwms][pin][:pwmchip]
       channel = map[:pwms][pin][:channel]
-      pwm = LGPIO::HardwarePWM.new(pwmchip, channel, frequency: 1000)
+      frequency ||= 1000
+      pwm = LGPIO::HardwarePWM.new(pwmchip, channel, frequency: frequency)
       hardware_pwms[pin] = pwm
     end
   end

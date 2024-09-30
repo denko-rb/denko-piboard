@@ -14,10 +14,10 @@ module Denko
       # If pin is bound to hardware PWM, allow it to be used as :output_pwm. OR :output.
       if map[:pwms][pin]
         if (mode == :output_pwm)
-          return hardware_pwm_from_pin(pin)
+          return hardware_pwm_from_pin(pin, options)
         elsif (mode == :output)
           puts "WARNING: using hardware PWM on pin #{pin} as GPIO. Will be slower than regular GPIO."
-          return hardware_pwm_from_pin(pin)
+          return hardware_pwm_from_pin(pin, options)
         else
           raise "Pin #{pin} is bound to hardware PWM. It can only be used as :output or :output_pwm"
         end
