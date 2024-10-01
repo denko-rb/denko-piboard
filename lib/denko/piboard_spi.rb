@@ -19,7 +19,7 @@ module Denko
 
       # Handle select_pin unless it's same as CS0 for this interface.
       digital_write(select, 0) if select && (select != map[:spis][index][:cs0])
-      bytes = LGPIO.spi_xfer(handle, write)
+      bytes = LGPIO.spi_xfer(handle, write, read)
       spi_close(handle)
       digital_write(select, 1) if select && (select != map[:spis][index][:cs0])
 
