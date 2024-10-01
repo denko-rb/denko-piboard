@@ -6,10 +6,10 @@ require 'denko/piboard'
 
 LED_PIN = 3 # On the register's parallel outputs
 
-# Use board map ~/.denko_piboard_map.yml
-board     = Denko::PiBoard.new
+# Use board map from ~/.denko_piboard_map.yml
+board = Denko::PiBoard.new
 
-# Use the first hardware SPI interface, and it's defined :cs0 pin.
+# Use the first hardware SPI interface, and its defined :cs0 pin.
 spi_index   = board.map[:spis].keys.first
 chip_select = board.map[:spis][spi_index][:cs0]
 bus         = Denko::SPI::Bus.new(board: board, index: spi_index)
@@ -23,11 +23,15 @@ bus         = Denko::SPI::Bus.new(board: board, index: spi_index)
 #
 register = Denko::SPI::OutputRegister.new(bus: bus, pin: chip_select)
 
-# Turn the LED on by shifting 1 to the correct bit and writing it.
-register.spi_write([0b1 << LED_PIN])
+# Turn on the LED by setting the corresponding bit, then writing to the register.
+register.bit_set(LED_PIN, 1)
+register.write
 
-# OutputRegister is a BoardProxy. DigitalOutputs can treat it as a Board.
-led = Denko::LED.new(board: register, pin: 0)
+# OutputRegister is a BoardProxy. It has #digital_write, and other methods from Board.
+register.digital_write(LED_PIN, 0)
+
+# DigitalOutputs can treat it as a Board.
+led = Denko::LED.new(board: register, pin: LED_PIN)
 
 # Blink the LED and sleep the main thread.
 led.blink 0.5
