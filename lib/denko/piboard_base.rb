@@ -22,15 +22,6 @@ module Denko
       parse_map(map_yaml_file)
     end
 
-    # Store multiple LGPIO handles, since one board might have multiple chips.
-    def gpio_handle(index)
-      gpio_handles[index] ||= LGPIO.chip_open(index)
-    end
-
-    def gpio_handles
-      @gpio_handles ||= []
-    end
-
     def finish_write
       gpio_handles.each { |h| LGPIO.chip_close(h) if h }
     end

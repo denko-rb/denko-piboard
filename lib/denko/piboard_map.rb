@@ -4,7 +4,7 @@ module Denko
   class PiBoard
     DEFAULT_MAP_FILE = ".denko_piboard_map.yml"
 
-    attr_reader :map, :alert_lut
+    attr_reader :map, :alert_lut, :gpiochip_lookup_optimized
 
     def parse_map(map_yaml)
       @map = YAML.load_file(map_yaml, symbolize_names: true)
@@ -53,6 +53,38 @@ module Denko
         raise StandardError, "board map error. Pin #{k} appears to be bound to both #{dev_path} and #{bound_pins[k]}" if bound_pins[k]
         bound_pins[k] = dev_path
       end
+
+      load_gpiochip_lookup_optimizations
+    end
+
+    #
+    # Monkey patch to eliminate lookups, and improve performance,
+    # when all GPIO lines are on a single gpiochip, and the readable
+    # GPIO numbers exactly match the GPIO line numbers.
+    #
+    def load_gpiochip_lookup_optimizations
+      @gpiochip_lookup_optimized = false
+
+      # Makes performance slightly worse on YJIT?
+      return if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+
+      # All pins must be defined on the same gpiochip.
+      unique_gpiochips = map[:pins].each_value.map { |pin_def| pin_def[:chip] }.uniq
+      return if unique_gpiochips.length != 1
+
+      # For each pin, the key integer must be equal to the line integer.
+      map[:pins].each_pair do |gpio_num, pin_def|
+        return unless (gpio_num == pin_def[:line])
+      end
+
+      # Open the handle so it can be given as a literal in the optimized methods.
+      gpiochip_single_handle = gpio_handle(unique_gpiochips.first)
+
+      code = File.read(File.dirname(__FILE__) + "/piboard_core_optimize_lookup.rb")
+      code = code.gsub("__GPIOCHIP_SINGLE_HANDLE__", gpiochip_single_handle.to_s)
+
+      singleton_class.class_eval(code)
+      @gpiochip_lookup_optimized = true
     end
 
     # Make a new tuple, given a human-readable pin number, using values from the map.
@@ -71,6 +103,15 @@ module Denko
     # Cache tuples of [handle, line_number], keyed to human-readable pin numbers.
     def gpio_tuples
       @gpio_tuples ||= []
+    end
+
+    # Store multiple LGPIO handles, since one board might have multiple chips.
+    def gpio_handle(index)
+      gpio_handles[index] ||= LGPIO.chip_open(index)
+    end
+
+    def gpio_handles
+      @gpio_handles ||= []
     end
 
     # Keep track of pins bound by non-GPIO peripherals.

@@ -1,5 +1,6 @@
 module Denko
   class PiBoard
+    REPORT_SLEEP_TIME = 0.001
     INPUT_MODES  = [:input, :input_pullup, :input_pulldown]
     OUTPUT_MODES = [:output, :output_pwm, :output_open_drain, :output_open_source]
     PIN_MODES = INPUT_MODES + OUTPUT_MODES
@@ -51,7 +52,6 @@ module Denko
       pin_configs[pin] = pin_configs[pin].to_h.merge(debounce_time: debounce_time)
     end
 
-    # CMD = 1
     def digital_write(pin, value)
       if hardware_pwms[pin]
         hardware_pwms[pin].duty_percent = (value == 0) ? 0 : 100
@@ -61,7 +61,6 @@ module Denko
       end
     end
 
-    # CMD = 2
     def digital_read(pin)
       if hardware_pwms[pin]
         state = hardware_pwms[pin].duty_percent
@@ -73,7 +72,6 @@ module Denko
       return state
     end
 
-    # CMD = 3
     def pwm_write(pin, duty)
       if hardware_pwms[pin]
         hardware_pwms[pin].duty_percent = duty
@@ -84,17 +82,14 @@ module Denko
       end
     end
 
-    # CMD = 4
     def dac_write(pin, value)
       raise "PiBoard#dac_write not implemented"
     end
 
-    # CMD = 5
     def analog_read(pin, negative_pin=nil, gain=nil, sample_rate=nil)
       raise "PiBoard#analog_read not implemented"
     end
 
-    # CMD = 6
     def set_listener(pin, state=:off, options={})
       # Validate listener is digital only.
       options[:mode] ||= :digital
@@ -134,25 +129,25 @@ module Denko
 
     def start_alert_thread
       start_gpio_reports
-      @alert_thread = Thread.new do
-        loop do
-          report = LGPIO.gpio_get_report
-          if report
-            if chip = alert_lut[report[:chip]]
-              if pin = chip[report[:gpio]]
-                update(pin, report[:level])
-              end
-            end
-          else
-            sleep 0.001
-          end
-        end
-      end
+      @alert_thread = Thread.new { loop { get_report } }
     end
 
     def stop_alert_thread
       Thread.kill(@alert_thread) if @alert_thread
       @alert_thread = nil
+    end
+
+    def get_report
+      report = LGPIO.gpio_get_report
+      if report
+        if chip = alert_lut[report[:chip]]
+          if pin = chip[report[:gpio]]
+            update(pin, report[:level])
+          end
+        end
+      else
+        sleep 0.001
+      end
     end
 
     def start_gpio_reports
