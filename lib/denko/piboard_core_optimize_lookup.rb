@@ -24,8 +24,7 @@ end
 def get_report
   report = LGPIO.gpio_get_report
   if report
-    pin = report[:gpio]
-    update(pin, report[:level])
+    update(report[:gpio], report[:level])
   else
     sleep REPORT_SLEEP_TIME
   end
