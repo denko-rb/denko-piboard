@@ -97,10 +97,14 @@ sleep
 ## Installation
 
 #### 1. Install the lg C library
-```shell
-sudo apt install swig python3-dev python3-setuptools
+```console
+# Requirements to install lgpio C
+sudo apt install swig python3-dev python3-setuptools gcc make
 
+# Temporary fork of: wget https://github.com/joan2937/lg/archive/master.zip
 wget https://github.com/vickash/lg/archive/refs/heads/master.zip
+
+# Install lgpio C
 unzip master.zip
 cd lg-master
 make
@@ -108,7 +112,10 @@ sudo make install
 ```
 
 #### 2. Install denko-piboard gem
-```shell
+```console
+# The latest Ruby 3 + YJIT is recommended, but you can use the system Ruby from apt too.
+# sudo apt install ruby ruby-dev
+
 gem install denko-piboard
 ```
 **Note:** `sudo` may be needed before `gem install` if using the system Ruby.
