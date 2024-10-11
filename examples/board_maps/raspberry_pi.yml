@@ -87,7 +87,7 @@ spis:
     clk: 11
     mosi: 10
     miso: 9
-    # cs0: 8
+    cs0: 8
     # cs1: 7
 
   #

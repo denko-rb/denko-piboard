@@ -26,14 +26,16 @@ end
 sleep
 ```
 
-## Features
+## Linux GPIO Features
 - [x] Internal Pull-Up/Down
 - [x] Open Drain/Source
 - [x] Digital Read/Write
 - [x] Digital Listen (Alerts)
-  - Interrupt driven, unlike `denko` microcontroller 1ms polling
+  - Interrupt driven, unlike `denko` microcontroller implementation 1ms polling
   - Built in software debounce (1us by default)
-  - Alerts are read from a FIFO queue up to 65,536. Oldest alerts lost first.
+  - Alerts are read from a FIFO queue up to 65,536. Oldest alerts are lost first.
+- [ ] Analog Read (ADC)
+- [ ] Analog Write (DAC)
 - [x] Software PWM Out (any pin)
 - [x] Hardware PWM Out (specific pins per board)
 - [x] Tone Out (via Software PWM or Hardware PWM)
@@ -55,9 +57,6 @@ sleep
 ### Incompatible Features
 - EEPROM
   - Use filesystem for persistence instead
-- Analog I/O
-  - No ADCs or DACs built into SBCs tested so far
-  - External ones will work over I2C or SPI
 
 ## Support
 
@@ -116,26 +115,27 @@ gem install denko-piboard
 
 ## Enable Hardware
 
-**Note:** These sections are simplified instructions for some common SBCs, but `denko-piboard` can be congigured for any SBC, as long as the hardware is supported by the relevant Linux subsystems. See [BOARD_MAPS.md](BOARD_MAPS.md).
+**Note:** These are simplified instructions for common SBCs. denko-piboard can be congigured for any SBC where the hardware is supported by the Linux subsystems. To learn how, or better understand these instructions, see [BOARD_MAPS.md](BOARD_MAPS.md).
 
 ### Instructions For Raspberry Pi 4 and Below
-- Save the [default map](examples/board_maps/raspberry_pi.yml) to `~/.denko_piboard_map.yml` on your board.
-- Add these lines to `/boot/config.txt` and reboot:
+- Install Raspberry Pi OS
+- Save the [default map](examples/board_maps/raspberry_pi.yml) as `~/.denko_piboard_map.yml` on your board.
+- Add the lines below to `/boot/config.txt`, and reboot.
 ```
-# PWM bound to GPIO 12 and 13
+# 2 PWMS on GPIO 12 and 13
 dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
-# I2C1 @ 400 kHz
+# /dev/i2c-1 (I2C1) @ 400 kHz
 dtparam=i2c_arm=on
 dtparam=i2c_arm_baudrate=400000
-# SPI0 with no reserved select pins
-dtoverlay=spi0-0cs
+# /dev/spidev-0.0 (SPI0) with first chip select (CS0) enabled
+dtoverlay=spi0-1cs
 ```
 
 ### Get Permission
 By default, only `root` might have access to GPIO / I2C / SPI / PWM. If you don't want to run Ruby scripts as `root`, [this section](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-6-get-permission) of my Orange Pi tutorial should work for any setup.
 
-## More Examples
-Specific [examples](examples) are provided for this gem, but [main gem examples](https://github.com/denko-rb/denko/tree/master/examples) can be modified to work:
+## Modifying Examples From Main Gem
+Some [examples](examples) are provided within this gem, but examples from the [main denko gem](https://github.com/denko-rb/denko/tree/master/examples) are more comprehensive. They are written to run using tethered microcontrollers, `Denko::Board`, but can easily be modified to work on a `Denko::PiBoard`:
 
 1. Replace setup code:
   ```ruby
@@ -151,4 +151,4 @@ Specific [examples](examples) are provided for this gem, but [main gem examples]
     board = Denko::PiBoard.new
   ```
 
-2. Update pin numbers as needed.
+2. Change pin numbers and I2C/SPI device indices as needed.
