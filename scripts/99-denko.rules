@@ -1,0 +1,9 @@
+#
+# A system ruby must be installed at /usr/bin/ruby
+# Change path/to/set_permissions.rb to the full path where you saved the permissions script
+# Ensure the USERNAME constant, in that copy of the script, is set to your Linux username as a string literal.
+#
+SUBSYSTEM=="gpio*",   ACTION=="add", PROGRAM="/usr/bin/ruby /path/to/set_permissions.rb gpio"
+SUBSYSTEM=="i2c*",    ACTION=="add", PROGRAM="/usr/bin/ruby /path/to/set_permissions.rb i2c"
+SUBSYSTEM=="spidev*", ACTION=="add", PROGRAM="/usr/bin/ruby /path/to/set_permissions.rb spi"
+SUBSYSTEM=="pwm*",    ACTION=="add", PROGRAM="/usr/bin/ruby /path/to/set_permissions.rb pwm"

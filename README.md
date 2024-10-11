@@ -87,7 +87,7 @@ sleep
 - Rubies:
   - Ruby 3.3.5 +YJIT
 
-## Installation
+## Install
 
 #### Install the lg C library
 ```console
@@ -106,8 +106,9 @@ sudo make install
 
 #### Install the denko-piboard gem
 ```console
-# The latest Ruby + YJIT from rbenv is best, but Ruby 3 from apt works too.
-# sudo apt install ruby ruby-dev
+# Latest Ruby + YJIT from rbenv performs best for GPIO work, but Ruby 3 from apt will work too.
+# If you want automate the (permissions script)(#get-permissions), you need a system Ruby anyway.
+sudo apt install ruby ruby-dev
 
 gem install denko-piboard
 ```
@@ -115,12 +116,13 @@ gem install denko-piboard
 
 ## Enable Hardware
 
-**Note:** These are simplified instructions for common SBCs. denko-piboard can be congigured for any SBC where the hardware is supported by the Linux subsystems. To learn how, or better understand these instructions, see [BOARD_MAPS.md](BOARD_MAPS.md).
+**Note:** These are simplified instructions for common SBCs, to get you going quickly. denko-piboard can be congigured for any SoC with hardware support in Linux. To learn how, see [BOARD_MAPS.md](BOARD_MAPS.md).
 
-### Instructions For Raspberry Pi 4 and Below
+### Raspberry Pi 4 and Below
 - Install Raspberry Pi OS
 - Save the [default map](examples/board_maps/raspberry_pi.yml) as `~/.denko_piboard_map.yml` on your board.
 - Add the lines below to `/boot/config.txt`, and reboot.
+
 ```
 # 2 PWMS on GPIO 12 and 13
 dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
@@ -131,11 +133,23 @@ dtparam=i2c_arm_baudrate=400000
 dtoverlay=spi0-1cs
 ```
 
-### Get Permission
-By default, only `root` might have access to GPIO / I2C / SPI / PWM. If you don't want to run Ruby scripts as `root`, [this section](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-6-get-permission) of my Orange Pi tutorial should work for any setup.
+## Get Permissions
+By default, only the Linux `root` user has access to GPIO / I2C / SPI / PWM. You probably don't want to run your Ruby scripts as root. If you already have a default board map at `~/.denko_piboard_map.yml`, copy [this script](scripts/set_permissions.rb), to your SBC, and run it:
+
+```console
+ruby denko_set_permissions.rb
+```
+
+It will load load the default board map, then:
+- Create any necessary Linux groups
+- Add your user to the relevant groups
+- Change ownership and permissions for the mapped devices, so the groups (and your user) can read/write them
+
+**Note:** Sudo permissions are required.
+**Note:** If you automate this script to run at boot (recommended), it will run as root. Set the `USERNAME` constant to your Linux user's name as a string literal. This ensures the map loads from your home, and changes are applied to your user, not root.
 
 ## Modifying Examples From Main Gem
-Some [examples](examples) are provided within this gem, but examples from the [main denko gem](https://github.com/denko-rb/denko/tree/master/examples) are more comprehensive. They are written to run using tethered microcontrollers, `Denko::Board`, but can easily be modified to work on a `Denko::PiBoard`:
+Some [examples](examples) are included in this gem, but the [main denko gem](https://github.com/denko-rb/denko/tree/master/examples) is more comprehensive. Those are written for tethered microcontrollers, `Denko::Board`, but can be modified for `Denko::PiBoard`:
 
 1. Replace setup code:
   ```ruby
