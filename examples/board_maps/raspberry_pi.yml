@@ -1,5 +1,7 @@
 #
-# Tested on Raspberry Pi 4B running Raspberry Pi OS.
+# Tested on:
+#   - Raspberry Pi 4B with Raspberry Pi OS, Kernel 6.6.47
+#   - Raspberry Pi Zero W, with Raspberry Pi OS, Kernel 6.6.51
 #
 # Should work for all 40-pin Raspberry Pi models on this OS,
 # EXCEPT Raspberry Pi 5.
@@ -51,8 +53,10 @@ pins:
   21: { phy: 40, chip: 0, line: 21 }
 
 pwms:
-  # In /boot/config.txt:
+  #
+  # To enable in /boot/config.txt:
   # dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
+  #
   12:
     pwmchip: 0
     channel: 0
@@ -61,18 +65,41 @@ pwms:
     channel: 1
 
 i2cs:
-  # In /boot/config.txt:
+  #
+  # To enable in /boot/config.txt:
   # dtparam=i2c_arm=on
+  # dtparam=i2c_arm_baudrate=400000
+  #
   1:
     scl: 3
     sda: 2
 
 spis:
-  # In /boot/config.txt:
-  # dtparam=spi=on
+  #
+  # To enable in /boot/config.txt:
+  # dtoverlay=spi0-0cs
+  #
+  # Enable SPI0, but don't reserve any CS pin.
+  # Leaves them free for regular GPIO.
+  # Denko can use any GPIO as a CS pin.
+  #
   0:
     clk: 11
     mosi: 10
     miso: 9
-    cs0: 8
-    cs1: 7
+    # cs0: 8
+    # cs1: 7
+
+  #
+  # To enable in /boot/config.txt:
+  # dtoverlay=spi1-1cs
+  #
+  # SPI1 must reserve at least CS0.
+  #
+  # 1:
+    # clk: 21
+    # mosi: 20
+    # miso: 19
+    # cs0: 18
+    ## cs1: 17
+    ## cs2: 16
