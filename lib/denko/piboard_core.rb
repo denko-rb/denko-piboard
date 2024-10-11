@@ -5,7 +5,6 @@ module Denko
     OUTPUT_MODES = [:output, :output_pwm, :output_open_drain, :output_open_source]
     PIN_MODES = INPUT_MODES + OUTPUT_MODES
 
-    # CMD = 0
     def set_pin_mode(pin, mode=:input, options={})
       # Is the mode valid?
       unless PIN_MODES.include?(mode)
@@ -125,6 +124,10 @@ module Denko
 
     def stop_listener(pin)
       set_listener(pin, :off)
+    end
+
+    def micro_delay(duration)
+      LGPIO.micro_delay(duration)
     end
 
     def start_alert_thread
