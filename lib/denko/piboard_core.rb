@@ -82,11 +82,11 @@ module Denko
     end
 
     def dac_write(pin, value)
-      raise "PiBoard#dac_write not implemented"
+      raise NotImplementedError, "PiBoard#dac_write not implemented"
     end
 
     def analog_read(pin, negative_pin=nil, gain=nil, sample_rate=nil)
-      raise "PiBoard#analog_read not implemented"
+      raise NotImplementedError, "PiBoard#analog_read not implemented"
     end
 
     def set_listener(pin, state=:off, options={})
@@ -122,8 +122,32 @@ module Denko
       set_listener(pin, :on, {})
     end
 
+    def analog_listen(pin, divider=16)
+      raise NotImplementedError, "PiBoard#analog_read not implemented"
+    end
+
     def stop_listener(pin)
       set_listener(pin, :off)
+    end
+
+    def halt_resume_check
+      raise NotImplementedError, "PiBoard#halt_resume_check not implemented"
+    end
+
+    def set_register_divider(value)
+      raise NotImplementedError, "PiBoard#set_register_divider not implemented"
+    end
+
+    def set_analog_write_resolution(value)
+      raise NotImplementedError, "PiBoard#set_analog_write_resolution not implemented"
+    end
+
+    def set_analog_read_resolution(value)
+      raise NotImplementedError, "PiBoard#set_analog_read_resolution not implemented"
+    end
+
+    def binary_echo(pin, data=[])
+      raise NotImplementedError, "PiBoard#binary_echo not implemented"
     end
 
     def micro_delay(duration)

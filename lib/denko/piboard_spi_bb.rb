@@ -33,5 +33,9 @@ module Denko
       bytes = interface.transfer(write: write, read: read, select: select_hash, order: bit_order, mode: mode)
       self.update(select, bytes) if (read > 0 && select)
     end
+
+    def spi_bb_listen(*arg, **kwargs)
+      raise NotImplementedError, "PiBoard#spi_bb_listen not implemented yet"
+    end
   end
 end

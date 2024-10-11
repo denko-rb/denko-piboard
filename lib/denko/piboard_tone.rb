@@ -7,7 +7,7 @@ module Denko
         @hardware_pwms[pin].duty_percent = 33
         sleep duration if duration
       else
-        raise "maximum software PWM frequency is 10 kHz" if frequency > 10_000
+        raise ArgumentError, "maximum software PWM frequency is 10 kHz" if frequency > 10_000
         cycles = 0
         cycles = (frequency * duration).round if duration
 

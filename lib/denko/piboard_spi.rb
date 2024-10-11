@@ -10,7 +10,6 @@ module Denko
       return config
     end
 
-    # CMD = 26
     def spi_transfer(index, select, write:[], read:0, frequency: 1_000_000, mode: 0, bit_order: nil)
       # Default frequency. Flags just has mode.
       frequency ||= 1_000_000
@@ -29,11 +28,10 @@ module Denko
       self.update(select, bytes) if (read > 0 && select)
     end
 
-    # CMD = 27
     def spi_listen(*arg, **kwargs)
+      raise NotImplementedError, "PiBoard#spi_listen not implemented yet"
     end
 
-    # CMD = 28
     def spi_stop(pin)
     end
 
