@@ -106,11 +106,11 @@ sudo make install
 
 #### Install the denko-piboard gem
 ```console
-# Latest Ruby + YJIT from rbenv performs best for GPIO work, but Ruby 3 from apt will work too.
-# If you want automate the (permissions script)(#get-permissions), you need a system Ruby anyway.
+# Latest Ruby + YJIT from rbenv works best, but Ruby 3 from apt works too.
+# Install system Ruby anyway if automating permissions startup script.
 sudo apt install ruby ruby-dev
 
-gem install denko-piboard
+sudo gem install denko-piboard
 ```
 **Note:** `sudo` may be needed before `gem install` if using the system Ruby.
 
@@ -134,7 +134,7 @@ dtoverlay=spi0-1cs
 ```
 
 ## Get Permissions
-By default, only the Linux `root` user has access to GPIO / I2C / SPI / PWM. You probably don't want to run your Ruby scripts as root. If you already have a default board map at `~/.denko_piboard_map.yml`, copy [this script](scripts/set_permissions.rb), to your SBC, and run it:
+By default, only the Linux `root` user can use GPIO / I2C / SPI / PWM. If you have a default board map at `~/.denko_piboard_map.yml`, save [this script](scripts/set_permissions.rb) to your SBC, then run it:
 
 ```console
 ruby denko_set_permissions.rb
@@ -143,13 +143,14 @@ ruby denko_set_permissions.rb
 It will load load the default board map, then:
 - Create any necessary Linux groups
 - Add your user to the relevant groups
-- Change ownership and permissions for the mapped devices, so the groups (and your user) can read/write them
+- Change ownership and permissions for devices inthe map, so you can read/write them
 
-**Note:** Sudo permissions are required.
-**Note:** If you automate this script to run at boot (recommended), it will run as root. Set the `USERNAME` constant to your Linux user's name as a string literal. This ensures the map loads from your home, and changes are applied to your user, not root.
+**Note:** `sudo` is required.
+
+**Note:** If you automate this script to run at boot (recommended), it will run as root. Set the `USERNAME` constant to your Linux user's name as a String literal. This ensures the map loads from your home, and changes are applied to your user, not root.
 
 ## Modifying Examples From Main Gem
-Some [examples](examples) are included in this gem, but the [main denko gem](https://github.com/denko-rb/denko/tree/master/examples) is more comprehensive. Those are written for tethered microcontrollers, `Denko::Board`, but can be modified for `Denko::PiBoard`:
+Some [examples](examples) are included in this gem, but the [main denko gem](https://github.com/denko-rb/denko/tree/master/examples) is more comprehensive. Those are written for connected microcontrollers, `Denko::Board`, but can be modified for `Denko::PiBoard`:
 
 1. Replace setup code:
   ```ruby
