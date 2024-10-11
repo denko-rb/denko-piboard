@@ -167,12 +167,17 @@ Using this information, `denko-piboard`:
 - Refers to I2C and SPI by their Linux device indices
 - Raises errors if you try to use a reserved pin. This would fail silently otherwise, which can be very confusing.
 
-Using this, overlay documentation for your board, and the examples in `examples/board_maps`, you should be able to create a map for any board that works now.
+There are some preconfigured maps, for popular boards, located [here](examples/board_maps). In general, these enable:
+- 2 PWM pins
+- 1 I2C interface (preferably on physical pins 3,5)
+- 1 SPI interface (preferably on physical pins 19,21,23)
 
-### Raspberry Pi 4 and Below
-Default board map: `examples/board_maps/raspberry_pi.yml`
+### Instructions For Raspberry Pi 4 and Below
+Default map: [raspberry_pi.yml](examples/board_maps/raspberry_pi.yml)
+
 Add these lines to `/boot/config.txt` and reboot.
-```console
+
+```
 # PWM bound to GPIO 12 and 13
 dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
 # I2C1 @ 400 kHz
