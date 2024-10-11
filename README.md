@@ -92,11 +92,9 @@ sleep
 - Rubies:
   - Ruby 3.3.5 +YJIT
 
-**Note:** The latest Ruby with YJIT is always recommended for performance, but any 3.0+ should work.
-
 ## Installation
 
-#### 1. Install the lg C library
+#### Install the lg C library
 ```console
 # Requirements to install lgpio C
 sudo apt install swig python3-dev python3-setuptools gcc make
@@ -111,33 +109,80 @@ make
 sudo make install
 ```
 
-#### 2. Install denko-piboard gem
+#### Install the denko-piboard gem
 ```console
-# The latest Ruby 3 + YJIT is recommended, but you can use the system Ruby from apt too.
+# The latest Ruby + YJIT from rbenv is best, but Ruby 3 from apt works too.
 # sudo apt install ruby ruby-dev
 
 gem install denko-piboard
 ```
 **Note:** `sudo` may be needed before `gem install` if using the system Ruby.
 
-## Hardware Configuration
+## Enable Hardware
 
-### 1. Enable I2C, SPI and PWM Devices
-I2C, SPI and PWM may be disabled on your SBC by default. This varies by manufacturer and Linux distro, but most distros include a config utility. For the Orange Pi Zero 2W specifically, running DietPi, I wrote a guide [here](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-5-enable-i2c-and-spi).
+**Note:** The first two sections describe how to configure `denko-piboard` for any Linux SBC. If you have one of pre-configured boards (see [board_maps](examples/board_maps)), and want the default configuration, you can skip to the instructions for your SBC below.
 
-For Raspberry Pi SBCs, running Raspberry Pi OS, `sudo raspi-config` should have most settings available, inside `Interfacing Options`. See also:
-  - [Configuring I2C](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c) (Adafruit)
-  - [Configuring SPI](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi) (Adafruit)
-  - [Change Raspberry Pi I2C Bus Speed](https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/) (Raspberry Spy)
-  - [Raspberry Pi Pinout](https://pinout.xyz/)
+### Overlays
 
-**Notes:**
-  - I2C frequency is set at boot time in Linux, and cannot be changed on a per-transmission basis.
-  - Pins bound to an I2C, SPI or UART interface cannot be used for Digital I/O at all.
-  - Once Hardware PWM is used on a given pin, that pin cannot be used for Digital I/O again, until reboot.
-  - Only one each of hardware I2C and SPI interfaces are supported, for now.
+The physical pins on your SBC can internally connect (multiplex) to diffent hardware devices within the SoC. The default is a regular GPIO. To use hardware PWM, I2C and SPI, we use Linux device tree overlays. These reserve pins, disconnected them from GPIO, and connect them to these devices instead.
 
-### 2. Get Permission
+This happens at boot, so there are side-effects:
+- Pins reserved by I2C or SPI cannot be used for anything else, until the interface is disabled, and the SBC is rebooted.
+- `denko-piboard` does some abstraction that lets a hardware PWM to work as a regular GPIO, but **only for digital output**, and it is significantly slower.
+- I2C frequency cannot be changed on a per-transmission basis.
+
+There are a couple other issues too:
+- A single SoC can implement multiple `/dev/gpiochip*` devices, with usable GPIOs spread across multiple chips, and non-unque line numbers.
+- Once PWM is enabled for a pin, it needs to be called by its `pwmchip*` and `pwm*` channel, not its regular GPIO number.
+- I2C and SPI devices reserve pins, but we refer to them by their index (N) from `/dev/spidev-N.0` or `/dev/i2c-N`.
+
+To deal with all this complexity, and standardize the user interface, `denko-piboard` uses board maps.
+
+### Board Maps
+
+A board map is a YAML file that outlines all the GPIO, PWM, I2C and SPI resources that exist (and are enabled) for a particular SBC.
+
+It follows these conventons:
+- `Denko::PiBoard.new` will raise unless it has a board map.
+- It accepts a board map file path as its only argument\
+- If that isn't given, it looks for `.denko_piboard_map.yml` in the user's home directory.
+- In the map, individual GPIOs are referred to, and keyed by, their "friendly" / human-readable" numbers
+  - These are arbitrary in theory, but the rule of thumb is: "unique numbers shown in the SBC's documentation"
+  - These are NOT physical numbers on the pinout
+  - These are NOT **necessarily** (although they often match) the line numbers of `/dev/gpiochip*` instances, since those may be non-unique
+- Each GPIO number declares its:
+  - Linux gpiochip
+  - Line on that gpiochip
+  - Physical number on the SBC's pinout (optional)
+- Each PWM declares:
+  - Which GPIO it takes when enabled
+  - Its Linux pwmchip
+  - Its pwm channel on that chip
+- Each I2C or SPI interface declares:
+  - All the GPIO numbers it takes, keyed to their names, eg. "miso:", "sda:" etc.
+
+Using this information, `denko-piboard`:
+- Refers to GPIOs by a single, user-friendly, unique number (rather than a tuple of gpiochip and line)
+- Refers to PWMs by the by the GPIO number they multiplex with (rather than a tuple of pwmchip and channel)
+- Refers to I2C and SPI by their Linux device indices
+- Raises errors if you try to use a reserved pin. This would fail silently otherwise, which can be very confusing.
+
+Using this, overlay documentation for your board, and the examples in `examples/board_maps`, you should be able to create a map for any board that works now.
+
+### Raspberry Pi 4 and Below
+Default board map: `examples/board_maps/raspberry_pi.yml`
+Add these lines to `/boot/config.txt` and reboot.
+```console
+# PWM bound to GPIO 12 and 13
+dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
+# I2C1 @ 400 kHz
+dtparam=i2c_arm=on
+dtparam=i2c_arm_baudrate=400000
+# SPI0 with no reserved select pins
+dtoverlay=spi0-0cs
+```
+
+### Get Permission
 By default, only `root` might have access to GPIO / I2C / SPI / PWM. If you don't want to run Ruby scripts as `root`, [this section](http://vickash.com/2024/08/06/ruby-lgpio-on-orangepi-zero2w.html#step-6-get-permission) of my Orange Pi tutorial should work for any setup.
 
 ## More Examples
@@ -152,12 +197,9 @@ Specific [examples](examples) are provided for this gem, but [main gem examples]
     require 'denko/piboard'
 
     # Replace this:
-    connection = Denko::Connection::Serial.new()
-    board = Denko::Board.new()
+    board = Denko::Board.new(Denko::Connection::Serial.new)
     # With this:
     board = Denko::PiBoard.new
   ```
 
 2. Update pin numbers as needed.
-
-3. For hardware I2C, SPI and PWM to work, you must give a YAML map of your board as the only argument to `Denko::PiBoard.new`. See [this example](examples/board_maps/orange_pi_zero_2w.yml) for the Orange Pi Zero 2W, and modify to match your board.
