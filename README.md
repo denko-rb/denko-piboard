@@ -116,57 +116,7 @@ gem install denko-piboard
 
 ## Enable Hardware
 
-**Note:** The first two sections describe how to configure `denko-piboard` for any Linux SBC. For some popular boards, there are simplified instructions below.
-
-### Overlays
-
-The physical pins on your SBC can internally connect to diffent hardware devices within the SoC. The default is regular GPIO. To use hardware PWM, I2C and SPI, we use Linux device tree overlays. These let the kernel reserve pins, disconnected them from GPIO, and connect them to the other hardware instead.
-
-This happens at boot, so there are side-effects:
-- Pins reserved by I2C or SPI can't be used for GPIO, unless the interface is disabled, and the SBC rebooted.
-- `denko-piboard` does some abstraction to let hardware PWMs work as regular GPIO, but **only for digital output**, and it is significantly slower.
-- I2C frequency can only be changed at boot time, not on a per-transmission basis.
-
-There are a couple other issues too:
-- One SoC may have multiple `/dev/gpiochip*`s, with GPIOs across multiple chips, and non-unque line numbers.
-- PWM is called by its `pwmchip*` and `pwm*` channel, not GPIO number.
-- I2C and SPI are called by index (N) from `/dev/i2c-N` or `/dev/spidev-N.0`, not GPIO numbers.
-
-To deal with this complexity, and standardize the user interface, `denko-piboard` uses board maps.
-
-### Board Maps
-
-A board map is a YAML file that outlines all the GPIO, PWM, I2C and SPI resources that exist (and are enabled) for a particular SBC.
-
-It follows these conventons:
-- `Denko::PiBoard.new` will raise unless it finds a board map
-- It accepts a board map file path as its only argument
-- If that isn't given, it looks for `.denko_piboard_map.yml` in the user's home directory.
-- In the map, individual GPIOs are referred to (and keyed by) their "friendly" or human-readable" numbers
-  - These are arbitrary in theory, but the rule of thumb is: "unique numbers shown in the SBC's documentation"
-  - These are NOT physical numbers on the pinout
-  - These are NOT **necessarily** (although they often match) the line numbers of `/dev/gpiochip*` instances, since those may be non-unique
-- Each GPIO number declares its:
-  - Linux gpiochip
-  - Line on that gpiochip
-  - Physical number on the SBC's pinout (optional)
-- Each PWM declares:
-  - Which GPIO number it reserves when enabled
-  - Its Linux pwmchip
-  - Its pwm channel on that chip
-- Each I2C or SPI interface declares:
-  - All the GPIO numbers it reserves, keyed to their names, eg. "miso:", "sda:" etc.
-
-This information, enables `denko-piboard` to:
-- Refer to GPIOs by a single, user-friendly, unique number (rather than a tuple of gpiochip and line)
-- Refer to PWMs by the GPIO number they multiplex with (rather than a tuple of pwmchip and channel)
-- Refer to I2C and SPI by their Linux device indices
-- Raise errors if you try to use a reserved pin. This fails silently otherwise, which is confusing.
-
-There are preconfigured maps, for some popular boards, located [here](examples/board_maps). In general, these enable:
-- 2 PWM pins
-- 1 I2C interface (preferably on physical pins 3,5)
-- 1 SPI interface (preferably on physical pins 19,21,23)
+**Note:** These sections are simplified instructions for some common SBCs, but `denko-piboard` can be congigured for any SBC, as long as the hardware is supported by the relevant Linux subsystems. See [BOARD_MAPS.md](BOARD_MAPS.md).
 
 ### Instructions For Raspberry Pi 4 and Below
 - Save the [default map](examples/board_maps/raspberry_pi.yml) to `~/.denko_piboard_map.yml` on your board.
