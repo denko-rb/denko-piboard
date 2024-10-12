@@ -54,19 +54,17 @@ sleep
 - [x] Bit-Bang SPI
 - [x] Bit-Bang 1-Wire
 
-### Incompatible Features
-- EEPROM
-  - Use filesystem for persistence instead
-
 ## Support
 
 #### Hardware
+
+In theory, this should work on any SBC, running Linux, with drivers for the relevant GPIO/I2C/SPI/PWM subsystems available on the system-on-chip (SoC). This is just a list of chips and products confirmed working.
 
 :green_heart: Known working
 :heart: Awaiting testing
 :question: Might work. No hardware
 
-|    Chip           | Status          | Products                               | Notes |
+| Chip              | Status          | Products                               | Notes |
 | :--------         | :------:        | :----------------------                |------ |
 | Allwinner H618    | :green_heart:   | Orange Pi Zero 2W                      | DietPi
 | Rockchip RK3566   | :green_heart:   | Radxa Zero 3W/E, Radxa Rock 3C         | Armbian
@@ -107,7 +105,7 @@ sudo make install
 #### Install the denko-piboard gem
 ```console
 # Latest Ruby + YJIT from rbenv works best, but Ruby 3 from apt works too.
-# Install system Ruby anyway if automating permissions startup script.
+# Install system Ruby anyway to automate permissions startup script.
 sudo apt install ruby ruby-dev
 
 sudo gem install denko-piboard
@@ -116,27 +114,12 @@ sudo gem install denko-piboard
 
 ## Enable Hardware
 
-**Note:** These are simplified instructions for common SBCs, to get you going quickly. denko-piboard can be congigured for any SoC with hardware support in Linux. See [the board maps readme](board_maps/README.md).
-
-### Raspberry Pi 4 and Below
-- For Raspberry Pi OS specifically
-- Save the [default map](board_maps/raspberry_pi.yml) as `~/.denko_piboard_map.yml` on your board.
-- Add the lines below to `/boot/config.txt`, and reboot.
-
-```
-# 2 PWMS on GPIO 12 and 13
-dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
-# /dev/i2c-1 (I2C1) @ 400 kHz
-dtparam=i2c_arm=on
-dtparam=i2c_arm_baudrate=400000
-# /dev/spidev0.0 (SPI0) with first chip select (CS0) enabled
-dtoverlay=spi0-1cs
-```
+**Note:** These are simplified instructions for a few SBCs, to get you going quickly. denko-piboard uses standard Linux interfaces, so should work for many. See [the board maps readme](board_maps/README.md).
 
 ### Orange Pi Zero 2W
 - For DietPi OS specifically
 - 2 PWMs on GPIO 226 and 227 (not matching the docs) are enabled without any setup.
-- Save the [default map](board_maps/orange_pi_zero_2w.yml) as `~/.denko_piboard_map.yml` on your board.
+- Save the [default map](board_maps/orange_pi_zero_2w.yml) as `~/.denko_piboard_map.yml` on your Zero2W.
 - Add/edit the lines below in `/boot/dietpiEnv.txt`, and reboot.
 
 ```
@@ -147,8 +130,8 @@ overlays=i2c1-pi spidev1_0
 ```
 
 ### Radxa Zero3W/E
-- For Armbian OS specifically. It's newer and performs better than latest Radxa OS, and DietPi available.
-- Unfortunately, Armbian does not package all device tree overlays for the RK3566 chip. I built binaries for this default config, on kernel `6.6.31-current-sunxi64`, and made them available [here](https://github.com/vickash/linux-sbc-overlays/tree/master/radxa/rockchip). To use them, download the `.dtbo` files into `/boot/dtb/rockchip/overlay` on your Zero3. Make sure the kernel versions match.
+- For Armbian OS specifically. Newer and performs better than latest Radxa OS or DietPi available.
+- Unfortunately, Armbian does not package all device tree overlays for the RK3566. I built binaries for this default config, on kernel `6.6.31-current-sunxi64`, and made them available [here](https://github.com/vickash/linux-sbc-overlays/tree/master/radxa/rockchip). To use, download the `.dtbo` files into `/boot/dtb/rockchip/overlay` on your Zero3. Make sure your kernel version matches.
 
 If you rather build the overlays yourself, that repo contains the script too. On the Zero3:
 ```console
@@ -156,7 +139,7 @@ sudo apt install device-tree-compiler
 ruby rk3568_denko_overlay_install.rb
 ```
 
-- Save the [default map](board_maps/radxa_zero3.yml) as `~/.denko_piboard_map.yml` on your board.
+- Save the [default map](board_maps/radxa_zero3.yml) as `~/.denko_piboard_map.yml` on your Zero3.
 - Add/edit the lines below in `/boot/armbianEnv.txt`, and reboot.
 
 ```
@@ -168,6 +151,21 @@ overlays=i2c3-m0 spi3-m1-cs0-spidev pwm8-m0 pwm9-m0
 ```
 
 **Note:** The Radxa docs are missing `I2C3_SDA_M0` and `I2C3_SCL_M0` in the function columns for GPIOs 32 and 33 respectively. This is an error. I2C3 works on these pins.
+
+### Raspberry Pi 4 and Lower
+- For Raspberry Pi OS specifically
+- Save the [default map](board_maps/raspberry_pi.yml) as `~/.denko_piboard_map.yml` on your Raspberry Pi.
+- Add the lines below to `/boot/config.txt`, and reboot.
+
+```
+# 2 PWMS on GPIO 12 and 13
+dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
+# /dev/i2c-1 (I2C1) @ 400 kHz
+dtparam=i2c_arm=on
+dtparam=i2c_arm_baudrate=400000
+# /dev/spidev0.0 (SPI0) with first chip select (CS0) enabled
+dtoverlay=spi0-1cs
+```
 
 ## Get Permissions
 By default, only the Linux `root` user can use GPIO / I2C / SPI / PWM. If you have a default board map at `~/.denko_piboard_map.yml`, save [this script](scripts/set_permissions.rb) to your SBC, then run it:
