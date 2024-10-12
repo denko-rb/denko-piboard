@@ -4,8 +4,9 @@
 require 'denko/piboard'
 
 board = Denko::PiBoard.new
-# index: corresponds to Linux I2C device number. /dev/i2c-3 in this case.
-bus = Denko::I2C::Bus.new(board: board, index: 3)
+# Use the first hardware I2C interface.
+i2c_index = board.map[:i2cs].keys.first
+bus       = Denko::I2C::Bus.new(board: board, index: i2c_index)
 
 bus.search
 

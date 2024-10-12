@@ -1,5 +1,5 @@
 #
-# Example of how to use the DHT class for DHT 11 and DHT 22 sensors.
+# Use a DHT class (DHT-11 / DHT-22) sensor for temperature and humidity.
 #
 require 'denko/piboard'
 require_relative 'neat_tph_readings'

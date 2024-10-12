@@ -1,5 +1,5 @@
 #
-# Example of reading an HC-SR04 ultrasonic sensor.
+# Use an HC-SR04 ultrasonic distance sensor.
 #
 require 'denko/piboard'
 

@@ -1,5 +1,5 @@
 #
-# Example of how to use the Dallas DS18B20 temperature sensor.
+# Use a Dallas DS18B20 temperature sensor on a 1-Wire bus.
 #
 require 'denko/piboard'
 

@@ -119,7 +119,7 @@ sudo gem install denko-piboard
 **Note:** These are simplified instructions for common SBCs, to get you going quickly. denko-piboard can be congigured for any SoC with hardware support in Linux. To learn how, see [BOARD_MAPS.md](BOARD_MAPS.md).
 
 ### Raspberry Pi 4 and Below
-- Install Raspberry Pi OS
+- Tested on Raspberry Pi OS only
 - Save the [default map](examples/board_maps/raspberry_pi.yml) as `~/.denko_piboard_map.yml` on your board.
 - Add the lines below to `/boot/config.txt`, and reboot.
 
@@ -137,13 +137,13 @@ dtoverlay=spi0-1cs
 By default, only the Linux `root` user can use GPIO / I2C / SPI / PWM. If you have a default board map at `~/.denko_piboard_map.yml`, save [this script](scripts/set_permissions.rb) to your SBC, then run it:
 
 ```console
-ruby denko_set_permissions.rb
+ruby set_permissions.rb
 ```
 
 It will load load the default board map, then:
 - Create any necessary Linux groups
 - Add your user to the relevant groups
-- Change ownership and permissions for devices inthe map, so you can read/write them
+- Change ownership and permissions for devices in the map, so you can read/write them
 
 **Note:** `sudo` is required.
 

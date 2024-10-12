@@ -1,5 +1,5 @@
 #
-# Example using a servo motor on a hardware PWM pin. Should raise an error
+# Use a servo motor on a hardware PWM pin. Should raise an error
 # if the GPIO given does not have a hardware PWM channel multiplexed.
 #
 require 'denko/piboard'

@@ -1,5 +1,5 @@
 #
-# AHT10 sensor used over bit-banged I2C.
+# AHT10 sensor over bit-banged I2C.
 #
 require 'denko/piboard'
 require_relative '../sensor/neat_tph_readings'

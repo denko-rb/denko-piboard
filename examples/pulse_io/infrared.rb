@@ -1,5 +1,5 @@
 #
-# Send remote control infrared signals.
+# Send remote control infrared signals on a hardware PWM pin.
 #
 require 'denko/piboard'
 

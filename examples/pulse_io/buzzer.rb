@@ -1,6 +1,6 @@
 #
-# Play a melody on a piezoelectric buzzer using hardware PWM.
-# This will use software PWM if given a regular GPIO, but won't be as good.
+# Play a melody on a piezoelectric buzzer using (hardware) PWM.
+# Will use software PWM if given a regular GPIO, but not as good as good.
 #
 require 'denko/piboard'
 

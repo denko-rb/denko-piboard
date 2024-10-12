@@ -1,7 +1,7 @@
 #
 # WARNING: This performs significantly better when used with a PiBoard instance
-# (Linux SBC), compared to a Board instance (USB attached microcontroller),
-# but still won't be perfect.
+# (Linux SBC), compared to a Board instance (attached microcontroller),
+# but still might not be perfect.
 #
 require 'denko/piboard'
 
