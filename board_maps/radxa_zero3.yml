@@ -1,14 +1,13 @@
 #
-# Testing board map for a Radxa Zero 3W running Armbian with 6.1 kernel.
+# Tested on Radxa Zero 3W, running Armbian, Kernel 6.1.75-vendor-rk35xx
+#
+# Note: Overlays are not packaged with Armbian for some reason. Hopefully this changes soon,
+# but I've built the .dtbo files for the kernel given above, and made them available here:
+#   https://github.com/vickash/linux-sbc-overlays/tree/master/radxa/rockchip
+# To use them, save all the .dtbo files into:
+#   /boot/dtb/rockchip/overlay
 #
 ---
-overlays_enabled:
-  - pwm8-m0
-  - pwm9-m0
-  - pwm14-m0
-  - i2c5-m0
-  - spi3-m1-cs0-spidev
-
 pins:
   # Left side (odd numbered)
   # PIN 1 is 3V3
@@ -55,6 +54,9 @@ pins:
   101: { phy: 40, chip: 3, line: 5 }
 
 pwms:
+  #
+  # Add to overlays= line in /boot/amrbianEnv.txt
+  #   pwm8-m0 pwm9-m0
   105:
     pwmchip: 0
     channel: 0
@@ -63,44 +65,23 @@ pwms:
     pwmchip: 1
     channel: 0
     overlay: pwm9-m0
-  116:
-    pwmchip: 2
-    channel: 0
-    overlay: pwm14-m0
 
 i2cs:
-  5:
-    scl: 107
-    sda: 108
-    overlay: i2c5-m0
+  #
+  # Add to overlays= line in /boot/amrbianEnv.txt
+  #   i2c3-m0
+  3:
+    scl: 33
+    sda: 32
+    overlay: i2c3-m0
 
 spis:
+  #
+  # Add to overlays= line in /boot/amrbianEnv.txt
+  #   ispi3-m1-cs0-spidev
   3:
     clk: 146
     mosi: 147
     miso: 149
     cs0: 150
     overlay: spi3-m1-cs0-spidev
-
-uarts:
-  2:
-    tx: 25
-    rx: 24
-    overlay: uart2-m0
-    default_terminal: true
-  3:
-    tx: 33
-    rx: 32
-    overlay: uart3-m0
-  4:
-    tx: 106
-    rx: 105
-    overlay: uart4-m1
-  5:
-    tx: 114
-    rx: 115
-    overlay: uart5-m1
-  9:
-    tx: 149
-    rx: 150
-    overlay: uart9-m1

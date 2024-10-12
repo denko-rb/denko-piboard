@@ -146,6 +146,29 @@ overlay_prefix=sun50i-h616
 overlays=i2c1-pi spidev1_0
 ```
 
+### Radxa Zero3W/E
+- For Armbian OS specifically. It's newer and performs better than latest Radxa OS, and DietPi available.
+- Unfortunately, Armbian does not package all device tree overlays for the RK3566 chip. I built binaries for this default config, on kernel `6.6.31-current-sunxi64`, and made them available [here](https://github.com/vickash/linux-sbc-overlays/tree/master/radxa/rockchip). To use them, download the `.dtbo` files into `/boot/dtb/rockchip/overlay` on your Zero3. Make sure the kernel versions match.
+
+If you rather build the overlays yourself, that repo contains the script too. On the Zero3:
+```console
+sudo apt install device-tree-compiler
+ruby rk3568_denko_overlay_install.rb
+```
+
+- Save the [default map](board_maps/radxa_zero3.yml) as `~/.denko_piboard_map.yml` on your board.
+- Add/edit the lines below in `/boot/armbianEnv.txt`, and reboot.
+
+```
+# /dev/i2c-3 (I2C3) @ 100 kHz
+# /dev/spidev3.0 (SPI3) with first chip select (CS0) enabled
+# 2 PWMs on GPIO 105 and 106
+overlay_prefix=rk3568
+overlays=i2c3-m0 spi3-m1-cs0-spidev pwm8-m0 pwm9-m0
+```
+
+**Note:** The Radxa docs are missing `I2C3_SDA_M0` and `I2C3_SCL_M0` in the function columns for GPIOs 32 and 33 respectively. This is an error. I2C3 works on these pins.
+
 ## Get Permissions
 By default, only the Linux `root` user can use GPIO / I2C / SPI / PWM. If you have a default board map at `~/.denko_piboard_map.yml`, save [this script](scripts/set_permissions.rb) to your SBC, then run it:
 
