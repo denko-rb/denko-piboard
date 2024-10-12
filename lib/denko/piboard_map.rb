@@ -32,26 +32,32 @@ module Denko
 
       # Validate I2Cs
       map[:i2cs].each_pair do |k, h|
-        raise StandardError, "invalid pin number: #{k} in YAML map :i2cs. Should be Integer"  unless k.class == Integer
-        raise StandardError, "invalid scl: #{h[:scl]}} for pin #{k}. Should be Integer"       unless h[:scl].class == Integer
-        raise StandardError, "invalid sda: #{h[:sda]}} for pin #{k}. Should be Integer"       unless h[:sda].class == Integer
-
+        raise StandardError, "invalid I2C index: #{k} in YAML map :i2cs. Should be Integer" unless k.class == Integer
         dev_path = "/dev/i2c-#{k}"
-        raise StandardError, "board map error. Pin #{k} appears to be bound to both #{dev_path} and #{bound_pins[k]}" if bound_pins[k]
-        bound_pins[k] = dev_path
+
+        [:scl, :sda].each do |pin_sym|
+          pin = h[pin_sym]
+          raise StandardError, "missing #{pin_sym}: for I2C#{k}" unless pin
+          raise StandardError, "invalid #{pin_sym}: #{pin} for I2C#{k}. Should be Integer" unless pin.class == Integer
+          raise StandardError, "board map error. Pin #{pin} appears to be bound to both #{dev_path} and #{bound_pins[pin]}" if bound_pins[pin]
+          bound_pins[pin] = dev_path
+        end
       end
 
       # Validate SPIs
       map[:spis].each_pair do |k, h|
-        raise StandardError, "invalid pin number: #{k} in YAML map :spis. Should be Integer"  unless k.class == Integer
-        raise StandardError, "invalid clk: #{h[:clk]}} for pin #{k}. Should be Integer"       unless h[:clk].class == Integer
-        raise StandardError, "invalid mosi: #{h[:mosi]}} for pin #{k}. Should be Integer"     unless h[:mosi].class == Integer
-        raise StandardError, "invalid miso: #{h[:miso]}} for pin #{k}. Should be Integer"     unless h[:miso].class == Integer
-        raise StandardError, "invalid cs0: #{h[:cs0]}} for pin #{k}. Should be Integer"       unless h[:cs0].class == Integer
-
+        raise StandardError, "invalid SPI index: #{k} in YAML map :spis. Should be Integer" unless k.class == Integer
         dev_path = "dev/spidev#{k}.0"
-        raise StandardError, "board map error. Pin #{k} appears to be bound to both #{dev_path} and #{bound_pins[k]}" if bound_pins[k]
-        bound_pins[k] = dev_path
+
+        [:clk, :mosi, :miso, :cs0].each do |pin_sym|
+          pin = h[pin_sym]
+          raise StandardError, "missing #{pin_sym}: for SPI#{k}" if (pin_sym == :clk) && !pin
+          next unless pin
+
+          raise StandardError, "invalid #{pin_sym}: #{pin} for SPI#{k}. Should be Integer" unless pin.class == Integer
+          raise StandardError, "board map error. Pin #{pin} appears to be bound to both #{dev_path} and #{bound_pins[pin]}" if bound_pins[pin]
+          bound_pins[pin] = dev_path
+        end
       end
 
       load_gpiochip_lookup_optimizations
