@@ -116,11 +116,11 @@ sudo gem install denko-piboard
 
 ## Enable Hardware
 
-**Note:** These are simplified instructions for common SBCs, to get you going quickly. denko-piboard can be congigured for any SoC with hardware support in Linux. To learn how, see [BOARD_MAPS.md](BOARD_MAPS.md).
+**Note:** These are simplified instructions for common SBCs, to get you going quickly. denko-piboard can be congigured for any SoC with hardware support in Linux. See [the board maps readme](board_maps/README.md).
 
 ### Raspberry Pi 4 and Below
 - For Raspberry Pi OS specifically
-- Save the [default map](examples/board_maps/raspberry_pi.yml) as `~/.denko_piboard_map.yml` on your board.
+- Save the [default map](board_maps/raspberry_pi.yml) as `~/.denko_piboard_map.yml` on your board.
 - Add the lines below to `/boot/config.txt`, and reboot.
 
 ```
@@ -136,7 +136,7 @@ dtoverlay=spi0-1cs
 ### Orange Pi Zero 2W
 - For DietPi OS specifically
 - 2 PWMs on GPIO 226 and 227 (not matching the docs) are enabled without any setup.
-- Save the [default map](examples/board_maps/orange_pi_zero_2w.yml) as `~/.denko_piboard_map.yml` on your board.
+- Save the [default map](board_maps/orange_pi_zero_2w.yml) as `~/.denko_piboard_map.yml` on your board.
 - Add/edit the lines below in `/boot/dietpiEnv.txt`, and reboot.
 
 ```
