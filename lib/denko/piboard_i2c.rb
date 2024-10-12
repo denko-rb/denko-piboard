@@ -1,5 +1,9 @@
 module Denko
   class PiBoard
+    # Address ranges 0..7 and 120..127 are reserved.
+    # Try each address in 8..119 (0x08 to 0x77).
+    I2C_ADDRESS_RANGE = (0x08..0x77).to_a
+
     # Maximum amount of bytes that can be read or written in a single I2C operation.
     def i2c_limit
       65535
@@ -10,9 +14,10 @@ module Denko
       i2c_mutex(index).synchronize do
         found_string = ""
 
-        # Address ranges 0..7 and 120..127 are reserved.
-        # Try each address in 8..119 (0x08 to 0x77).
-        (0x08..0x77).each do |address|
+        # I2C device may have reserved addresses. Exclude them.
+        addresses = I2C_ADDRESS_RANGE - map[:i2cs][index][:reserved_addresses].to_a
+
+        addresses.each do |address|
           handle = i2c_open(index, address)
           bytes = LGPIO.i2c_read_device(handle, 1)
           found_string << "#{address}:" if bytes[0] > 0

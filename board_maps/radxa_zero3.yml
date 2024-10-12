@@ -73,6 +73,7 @@ i2cs:
   3:
     scl: 33
     sda: 32
+    reserved_addresses: [0x22]
     overlay: i2c3-m0
 
 spis:
