@@ -53,7 +53,7 @@ This information enables denko-piboard to:
 - Refer to I2C and SPI by their Linux device indices
 - Raise errors if you try to use any reserved pin. This fails silently otherwise, which is confusing.
 
-There are pre-made maps for some boards [here](board_maps), which can be followed as templates. In general, these enable:
+There are pre-made maps for some boards [here](./), which can be followed as templates. In general, these enable:
 - 2 PWM pins
 - 1 I2C interface (on physical pins 3,5 when possible)
 - 1 SPI interface (on physical pins 19,21,23 when possible)

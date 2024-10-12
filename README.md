@@ -79,7 +79,7 @@ In theory, this should work on any SBC, running Linux, with drivers for the rele
 
 - Operating Systems:
   - DietPi (Bookworm)
-  - Amrbian (Bookworm)
+  - Armbian (Bookworm)
   - Raspberry Pi OS (Bookworm)
 
 - Rubies:
@@ -131,7 +131,7 @@ overlays=i2c1-pi spidev1_0
 
 ### Radxa Zero3W/E
 - For Armbian OS specifically. Newer and performs better than latest Radxa OS or DietPi available.
-- Unfortunately, Armbian does not package all device tree overlays for the RK3566. I built binaries for this default config, on kernel `6.6.31-current-sunxi64`, and made them available [here](https://github.com/vickash/linux-sbc-overlays/tree/master/radxa/rockchip). To use, download the `.dtbo` files into `/boot/dtb/rockchip/overlay` on your Zero3. Make sure your kernel version matches.
+- Unfortunately, Armbian does not package all device tree overlays for the RK3566. I built binaries for this default config, on kernel `6.1.75-vendor-rk35xx`, and made them available [here](https://github.com/vickash/linux-sbc-overlays/tree/master/radxa/rockchip). To use, download the `.dtbo` files into `/boot/dtb/rockchip/overlay` on your Zero3. Make sure your kernel version matches.
 
 If you rather build the overlays yourself, that repo contains the script too. On the Zero3:
 ```console
