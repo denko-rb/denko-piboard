@@ -26,10 +26,10 @@ def group_setup(group_name)
 
   unless group_line.match(/#{USERNAME}/)
     `sudo usermod -aG #{group_name} #{USERNAME}`
-    print "Added user #{USERNAME} to group #{group_name}. "
+    puts "Added user #{USERNAME} to group #{group_name}. "
     $added_to_group = true
   else
-    print "User #{USERNAME} already in group #{group_name}. "
+    puts "User #{USERNAME} already in group #{group_name}. "
   end
 end
 
@@ -84,8 +84,15 @@ def setup_pwm
     chip_dir = "/sys/class/pwm/pwmchip#{chip}"
     channel_dir = "/sys/class/pwm/pwmchip#{chip}/pwm#{chan}"
 
+    # Chip dir permissions
     `sudo chgrp -RH #{PWM_GROUP_NAME} #{chip_dir}`
+    `sudo chmod -R g+rw #{chip_dir}`
+
+    # Export
     `sudo echo #{chan} > #{chip_dir}/export` unless Dir.exist?(channel_dir)
+
+    # Channel dir permissions
+    `sudo chgrp -RH #{PWM_GROUP_NAME} #{channel_dir}`
     `sudo chmod -R g+rw #{channel_dir}`
 
     print channel_dir.gsub("/sys/class/pwm/", "")
