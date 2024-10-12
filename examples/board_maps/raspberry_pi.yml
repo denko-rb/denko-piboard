@@ -55,8 +55,7 @@ pins:
 pwms:
   #
   # To enable in /boot/config.txt:
-  # dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
-  #
+  #   dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
   12:
     pwmchip: 0
     channel: 0
@@ -67,9 +66,8 @@ pwms:
 i2cs:
   #
   # To enable in /boot/config.txt:
-  # dtparam=i2c_arm=on
-  # dtparam=i2c_arm_baudrate=400000
-  #
+  #   dtparam=i2c_arm=on
+  #   dtparam=i2c_arm_baudrate=400000
   1:
     scl: 3
     sda: 2
@@ -77,12 +75,7 @@ i2cs:
 spis:
   #
   # To enable in /boot/config.txt:
-  # dtoverlay=spi0-0cs
-  #
-  # Enable SPI0, but don't reserve any CS pin.
-  # Leaves them free for regular GPIO.
-  # Denko can use any GPIO as a CS pin.
-  #
+  #   dtoverlay=spi0-0cs
   0:
     clk: 11
     mosi: 10
@@ -92,10 +85,7 @@ spis:
 
   #
   # To enable in /boot/config.txt:
-  # dtoverlay=spi1-1cs
-  #
-  # SPI1 must reserve at least CS0.
-  #
+  #   dtoverlay=spi1-1cs
   # 1:
     # clk: 21
     # mosi: 20

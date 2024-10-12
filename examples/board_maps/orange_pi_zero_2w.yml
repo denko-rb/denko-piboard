@@ -1,13 +1,8 @@
 #
-# This is for an Orange Pi Zero 2W running DietPi (kernel 6.6),
-# with these overlays: spidev1_0 i2c1-pi
-# PWM channels 1 and 2 work by default (no overlay). Must b exported on boot.
+# Tested on Orange Pi Zero 2W, running DietPi, Kernel 6.6.31-current-sunxi64
+# Note: PWM channels 1 and 2 work without an overlay.
 #
 ---
-overlays_enabled:
-  - i2c1-pi
-  - spidev1_0
-
 pins:
   # Left side (odd numbered)
   # PIN 1 is 3V3
@@ -54,6 +49,10 @@ pins:
   259: { phy: 40, chip: 0, line: 259 }
 
 pwms:
+  #
+  # Works without overlays in /boot/dietpiEnv.txt
+  # NOTE: These DO NOT match the official Orange Pi documentation.
+  #
   227:
     pwmchip: 0
     channel: 1
@@ -62,15 +61,25 @@ pwms:
     channel: 2
 
 i2cs:
+  #
+  # Add to overlays= line in /boot/dietpiEnv.txt
+  #   i2c1-pi
+  #
+  # To get 400kHz, save this alternate overlay to the /boot/dtb/allwinner/overlay directory:
+  #   https://github.com/vickash/linux-sbc-overlays/blob/master/orangepi/sun50i-h616-i2c1-pi_400k.dtbo
+  #
+  # Then, in /boot/dietpiEnv.txt, use instead:
+  #   i2c1-pi_400k
   3:
     scl: 263
     sda: 264
-    overlay: i2c1-pi
 
 spis:
+  #
+  # Add to overlays= line in /boot/dietpiEnv.txt
+  #   spidev1_0
   1:
     clk: 230
     mosi: 231
     miso: 232
     cs0: 229
-    overlay: spidev1_0

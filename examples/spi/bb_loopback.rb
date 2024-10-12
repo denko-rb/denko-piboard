@@ -1,10 +1,10 @@
 require 'denko'
 require 'denko/piboard'
 
-CLOCK_PIN  = 22
-INPUT_PIN  = 5
-OUTPUT_PIN = 6
-SELECT_PIN = 17
+CLOCK_PIN  = 256
+INPUT_PIN  = 271
+OUTPUT_PIN = 258
+SELECT_PIN = 272
 
 board = Denko::PiBoard.new
 bus   = Denko::SPI::BitBang.new(board: board, pins: { clock: CLOCK_PIN, input: INPUT_PIN, output: OUTPUT_PIN })
