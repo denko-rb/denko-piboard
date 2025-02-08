@@ -2,7 +2,7 @@
 # Tested on:
 #   - Libre Computer Le Potato AML-S905X-CC, using Libre Computing's official Debian 12 (2024-01-25), with kernel 6.1.92-15907-gf36fd2695db3
 #
-# Based on https://docs.google.com/spreadsheets/d/1U3z0Gb8HUEfCIMkvqzmhMpJfzRqjPXq7mFLC-hvbKlE/edit?gid=0#gid=0
+# Based on https://docs.google.com/spreadsheets/d/1U3z0Gb8HUEfCIMkvqzmhMpJfzRqjPXq7mFLC-hvbKlE
 # Uses "Linux" GPIO numbers from that table
 #
 ---

@@ -74,6 +74,7 @@ In theory, this should work on any SBC, running Linux, with drivers for the rele
 | BCM2711           | :green_heart:   | Raspberry Pi 4, Raspberry Pi 400       | Raspberry Pi OS
 | BCM2710A1         | :green_heart:   | Raspberry Pi Zero 2W                   | Raspberry Pi OS
 | BCM2712           | :question:      | Raspberry Pi 5                         |
+| AML-S905X-CC      | :green_heart:   | Libre Computer Le Potato               | Libre Computer Debian 12
 
 #### Software
 
@@ -166,6 +167,28 @@ dtparam=i2c_arm_baudrate=400000
 # /dev/spidev0.0 (SPI0) with first chip select (CS0) enabled
 dtoverlay=spi0-1cs
 ```
+
+### Libre Computer Le Potato
+- Use [Libre Computer Debian 12](https://distro.libre.computer/ci/debian/12/debian-12-base-arm64%2Baml-s905x-cc.img.xz)
+- Save the [default map](board_maps/le_potato.yml) as `~/.denko_piboard_map.yml` on your Le Potato.
+- Fix invalid signatures for apt:
+```console
+wget https://deb.libre.computer/repo/pool/main/libr/libretech-keyring/libretech-keyring_2024.05.19_all.deb
+sudo dpkg -i libretech-keyring_2024.05.19_all.deb
+sudo apt update
+```
+- Install the Libre Computer Wiring Tool:
+```console
+sudo apt install libretech-gpio libretech-dtoverlay
+```
+- Enable the default overlays for PWM, I2C and SPI:
+```console
+# 1 PWM on GPIO 95
+# 1 I2C (/dev/i2c-0) on GPIO 4 (SCL) and GPIO 5 (SDA)
+# 1 SPI (/dev/spidev0.0) on GPIO 90 (CLK), GPIO 87 (MOSI), GPIO 88 (MISO), GPIO 98 (CS)
+sudo ldto merge pwm-e i2c-ao spicc spicc-spidev
+```
+- Reboot to enable overlays
 
 ## Get Permissions
 By default, only the Linux `root` user can use GPIO / I2C / SPI / PWM. If you have a default board map at `~/.denko_piboard_map.yml`, save [this script](scripts/set_permissions.rb) to your SBC, then run it:
