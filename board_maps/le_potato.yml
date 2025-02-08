@@ -1,0 +1,89 @@
+#
+# Tested on:
+#   - Libre Computer Le Potato AML-S905X-CC, using Libre Computing's official Debian 12 (2024-01-25), with kernel 6.1.92-15907-gf36fd2695db3
+#
+# Based on https://docs.google.com/spreadsheets/d/1U3z0Gb8HUEfCIMkvqzmhMpJfzRqjPXq7mFLC-hvbKlE/edit?gid=0#gid=0
+# Uses "Linux" GPIO numbers from that table
+#
+---
+pins:
+  # Left side (odd numbered physical pins)
+  # PIN 1 is 3V3
+  5: { phy: 3, chip: 0, line: 5 }
+  4: { phy: 5, chip: 0, line: 4 }
+  98: { phy: 7, chip: 1, line: 98 }
+  # PIN 9 is GND
+  8: { phy: 11, chip: 0, line: 8 }
+  9: { phy: 13, chip: 0, line: 9 }
+  10: { phy: 15, chip: 0, line: 10 }
+  # PIN 17 is 3V3
+  87: { phy: 19, chip: 1, line: 87 }
+  88: { phy: 21, chip: 1, line: 88 }
+  90: { phy: 23, chip: 1, line: 90 }
+  # PIN 25 is GND
+  75: { phy: 27, chip: 1, line: 75 }
+  96: { phy: 29, chip: 1, line: 96 }
+  97: { phy: 31, chip: 1, line: 97 }
+  85: { phy: 33, chip: 1, line: 85 }
+  86: { phy: 35, chip: 1, line: 86 }
+  84: { phy: 37, chip: 1, line: 84 }
+  # PIN 39 is GND
+
+  # Right side (even numbered physical pins)
+  # PIN 2 is 5V
+  # PIN 4 is 5V
+  # PIN 6 is GND
+  91: { phy: 8, chip: 1, line: 91 }
+  92: { phy: 10, chip: 1, line: 92 }
+  6: { phy: 12, chip: 0, line: 6 }
+  # PIN 14 is GND
+  93: { phy: 16, chip: 1, line: 93 }
+  94: { phy: 18, chip: 1, line: 94 }
+  # PIN 20 is GND
+  79: { phy: 22, chip: 1, line: 79 }
+  89: { phy: 24, chip: 1, line: 89 }
+  80: { phy: 26, chip: 1, line: 80 }
+  76: { phy: 28, chip: 1, line: 76 }
+  # PIN 30 is GND
+  95: { phy: 32, chip: 1, line: 95 }
+  # PIN 34 is GND
+  81: { phy: 36, chip: 1, line: 81 }
+  82: { phy: 38, chip: 1, line: 82 }
+  83: { phy: 40, chip: 1, line: 83 }
+
+pwms:
+  # Overlay:        pwm-e
+  # Enable on boot: sudo ldto merge pwm-e
+  # Device:         /sys/class/pwm/pwmchip0/pwm0
+  #
+  95:
+    pwmchip: 0
+    channel: 0
+
+i2cs:
+  # Overlay:        i2c-ao
+  # Enable on boot: sudo ldto merge i2c-ao
+  # Device:         /dev/i2c-0
+  #
+  0:
+    scl: 4
+    sda: 5
+
+  # Overlay:        i2c-b
+  # Enable on boot: sudo ldto merge i2c-b
+  # Device:         /dev/i2c-0 (if enabled alone), /dev/i2c-1 (if enabled with i2c-ao)
+  #
+  # 1:
+  #   scl: 76
+  #   sda: 75
+
+spis:
+  # Overlays:       spicc, spicc-spidev
+  # Enable on boot: sudo ldto merge spicc spicc-spidev
+  # Device:         /dev/spidev0.0
+  #
+  0:
+    clk: 90
+    mosi: 87
+    miso: 88
+    cs0: 89
