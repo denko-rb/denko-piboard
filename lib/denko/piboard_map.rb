@@ -128,5 +128,9 @@ module Denko
     def convert_pin(pin)
       pin.to_i if pin
     end
+    
+    def pin_is_pwm?(pin)
+      map[:pwms][pin]
+    end
   end
 end
