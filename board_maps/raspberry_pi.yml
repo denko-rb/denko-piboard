@@ -80,8 +80,8 @@ spis:
     clk: 11
     mosi: 10
     miso: 9
-    cs0: 8
-    # cs1: 7
+    # cs0: 8 # only if using dtoverlay=spi0-1cs or dtoverlay=spi0-2cs
+    # cs1: 7 # only if using dtoverlay=spi0-2cs
 
   #
   # To enable in /boot/config.txt:
@@ -91,5 +91,5 @@ spis:
     # mosi: 20
     # miso: 19
     # cs0: 18
-    ## cs1: 17
-    ## cs2: 16
+    # cs1: 17 # only if using dtoverlay=spi1-2cs or dtoverlay=spi1-3cs
+    # cs2: 16 # only if using dtoverlay=spi1-3cs
