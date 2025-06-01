@@ -1,0 +1,95 @@
+#
+# This is based on Rasperry Pi documentation, but UNTESTED in hardware.
+# It should work for the Raspberry Pi 5.
+#   - GPIO line numbers are same as older Pis, but the gpiochip has changed from 0 to 4.
+#   - dtparam/dtoverlay for PWM, I2C and SPI are all unchanged, based on info from:
+#       https://github.com/raspberrypi/firmware/blob/master/boot/overlays/README
+#   - Expected to work on current Raspberry Pi OS.
+#
+---
+pins:
+  # Left side (odd numbered physical pins)
+  # PIN 1 is 3V3
+  2: { phy: 3, chip: 4, line: 2 }
+  3: { phy: 5, chip: 4, line: 3 }
+  4: { phy: 7, chip: 4, line: 4 }
+  # PIN 9 is GND
+  17: { phy: 11, chip: 4, line: 17 }
+  27: { phy: 13, chip: 4, line: 27 }
+  22: { phy: 15, chip: 4, line: 22 }
+  # PIN 17 is 3V3
+  10: { phy: 19, chip: 4, line: 10 }
+  9: { phy: 21, chip: 4, line: 9 }
+  11: { phy: 23, chip: 4, line: 11 }
+  # PIN 25 is GND
+  0: { phy: 27, chip: 4, line: 0 }
+  5: { phy: 29, chip: 4, line: 5 }
+  6: { phy: 31, chip: 4, line: 6 }
+  13: { phy: 33, chip: 4, line: 13 }
+  19: { phy: 35, chip: 4, line: 19 }
+  26: { phy: 37, chip: 4, line: 26 }
+  # PIN 39 is GND
+
+  # Right side (even numbered physical pins)
+  # PIN 2 is 5V
+  # PIN 4 is 5V
+  # PIN 6 is GND
+  14: { phy: 8, chip: 4, line: 14 }
+  15: { phy: 10, chip: 4, line: 15 }
+  18: { phy: 12, chip: 4, line: 18 }
+  # PIN 14 is GND
+  23: { phy: 16, chip: 4, line: 23 }
+  24: { phy: 18, chip: 4, line: 24 }
+  # PIN 20 is GND
+  25: { phy: 22, chip: 4, line: 25 }
+  8: { phy: 24, chip: 4, line: 8 }
+  7: { phy: 6, chip: 4, line: 7 }
+  1: { phy: 28, chip: 4, line: 1 }
+  # PIN 30 is GND
+  12: { phy: 32, chip: 4, line: 12 }
+  # PIN 34 is GND
+  16: { phy: 36, chip: 4, line: 16 }
+  20: { phy: 38, chip: 4, line: 20 }
+  21: { phy: 40, chip: 4, line: 21 }
+
+pwms:
+  #
+  # To enable in /boot/config.txt:
+  #   dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
+  12:
+    pwmchip: 0
+    channel: 0
+  13:
+    pwmchip: 0
+    channel: 1
+
+i2cs:
+  #
+  # To enable in /boot/config.txt:
+  #   dtparam=i2c_arm=on
+  #   dtparam=i2c_arm_baudrate=400000
+  1:
+    scl: 3
+    sda: 2
+
+spis:
+  #
+  # To enable in /boot/config.txt:
+  #   dtoverlay=spi0-0cs
+  0:
+    clk: 11
+    mosi: 10
+    miso: 9
+    # cs0: 8 # only if using dtoverlay=spi0-1cs or dtoverlay=spi0-2cs
+    # cs1: 7 # only if using dtoverlay=spi0-2cs
+
+  #
+  # To enable in /boot/config.txt:
+  #   dtoverlay=spi1-1cs
+  # 1:
+    # clk: 21
+    # mosi: 20
+    # miso: 19
+    # cs0: 18
+    # cs1: 17 # only if using dtoverlay=spi1-2cs or dtoverlay=spi1-3cs
+    # cs2: 16 # only if using dtoverlay=spi1-3cs

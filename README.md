@@ -168,6 +168,10 @@ dtparam=i2c_arm_baudrate=400000
 dtoverlay=spi0-1cs
 ```
 
+### Raspberry Pi 5
+- Instructions are same as Pi <= 4, but use the [Pi 5 map](board_maps/raspberry_pi5.yml) instead.
+- NOTE: This is based on Raspberry Pi docs, but untested in hardware. If you notice anything that should be fixed, please open a PR.
+
 ### Libre Computer Le Potato
 - Use [Libre Computer Debian 12](https://distro.libre.computer/ci/debian/12/debian-12-base-arm64%2Baml-s905x-cc.img.xz)
 - Save the [default map](board_maps/le_potato.yml) as `~/.denko_piboard_map.yml` on your Le Potato.
