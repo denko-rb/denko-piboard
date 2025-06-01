@@ -1,5 +1,9 @@
 module Denko
   class PiBoard
+    def spi_limit
+      4096
+    end
+
     def spi_flags(mode)
       mode ||= 0
       raise ArgumentError, "invalid SPI mode #{mode}" unless (0..3).include? mode
