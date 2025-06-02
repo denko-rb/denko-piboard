@@ -16,5 +16,5 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>=3'
 
   s.add_dependency 'lgpio',  '~> 0.1'
-  s.add_dependency 'denko',  '~> 0.14'
+  s.add_dependency 'denko',  '~> 0.15'
 end
