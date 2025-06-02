@@ -22,6 +22,10 @@ module Denko
       parse_map(map_yaml_file)
     end
 
+    def platform
+      :linux
+    end
+
     def finish_write
       gpio_handles.each { |h| LGPIO.chip_close(h) if h }
     end
