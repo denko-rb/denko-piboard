@@ -17,6 +17,6 @@ end
 values = (0..100).to_a + (1..99).to_a.reverse
 
 values.cycle do |v|
-  led.write(v)
+  led.duty = v
   sleep 0.020
 end

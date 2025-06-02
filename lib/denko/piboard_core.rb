@@ -78,7 +78,7 @@ module Denko
         handle, line = gpio_tuple(pin)
         frequency    = pin_configs[pin][:frequency] || 1000
         period       = pin_configs[pin][:period]    || 1_000_000
-        duty_percent = (duty.to_f / period)
+        duty_percent = (duty.to_f / period) * 100
         LGPIO.tx_pwm(handle, line, frequency, duty_percent, 0, 0)
       end
     end
