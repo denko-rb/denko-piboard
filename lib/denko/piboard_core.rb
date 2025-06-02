@@ -73,11 +73,13 @@ module Denko
 
     def pwm_write(pin, duty)
       if hardware_pwms[pin]
-        hardware_pwms[pin].duty_percent = duty
+        hardware_pwms[pin].duty = duty
       else
-        frequency    = pin_configs[pin][:frequency] || 1000
         handle, line = gpio_tuple(pin)
-        LGPIO.tx_pwm(handle, line, frequency, duty, 0, 0)
+        frequency    = pin_configs[pin][:frequency] || 1000
+        period       = pin_configs[pin][:period]    || 1_000_000
+        duty_percent = (duty.to_f / period)
+        LGPIO.tx_pwm(handle, line, frequency, duty_percent, 0, 0)
       end
     end
 
