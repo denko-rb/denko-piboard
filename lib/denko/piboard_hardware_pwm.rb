@@ -1,5 +1,10 @@
 module Denko
   class PiBoard
+    # Check if a GPIO number is bound to a hardware PWM.
+    def pin_is_pwm?(pin)
+      map[:pwms][pin]
+    end
+
     def hardware_pwms
       @hardware_pwms ||= []
     end
