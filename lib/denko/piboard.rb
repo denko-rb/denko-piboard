@@ -8,7 +8,6 @@ require_relative 'piboard_pulse'
 require_relative 'piboard_tone'
 
 require_relative 'piboard_hardware_pwm'
-require_relative 'piboard_servo'
 require_relative 'piboard_infrared'
 
 require_relative 'piboard_i2c'
