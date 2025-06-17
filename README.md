@@ -120,7 +120,7 @@ sudo gem install denko-piboard
 ### Orange Pi Zero 2W
 - For DietPi OS specifically
 - 2 PWMs on GPIO 226 and 227 (not matching the docs) are enabled without any setup.
-- Save the [default map](board_maps/orange_pi_zero_2w.yml) as `~/.denko_piboard_map.yml` on your Zero2W.
+- If using Linux kernel 6.12 or later, save the [default map](board_maps/orange_pi_zero_2w.yml) as `~/.denko_piboard_map.yml` on your Zero2W. If using the older 6.6 kernel, use [this older map](board_maps/orange_pi_zero_2w_6.6.yml) instead. Somewhere between 6.6 and 6.12, the default GPIO chip number changed from 0 to 1.
 - Add/edit the lines below in `/boot/dietpiEnv.txt`, and reboot.
 
 ```
