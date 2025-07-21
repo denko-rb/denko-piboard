@@ -1,7 +1,7 @@
 module Denko
   class PiBoard
     REPORT_SLEEP_TIME = 0.001
-    INPUT_MODES  = [:input, :input_pullup, :input_pulldown]
+    INPUT_MODES  = [:input, :input_pullup, :input_pulldown, :input_adc]
     OUTPUT_MODES = [:output, :output_pwm, :output_open_drain, :output_open_source]
     PIN_MODES = INPUT_MODES + OUTPUT_MODES
 
