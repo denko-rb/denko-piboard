@@ -11,9 +11,19 @@
 #
 require 'denko/piboard'
 
-# Special character that fills a 4x6 rectangle.
+# Max CPU usage reported as 400% with 4 cores, 800% with 8 cores, etc.
+# Use this to scale down to 100%.
+CORE_COUNT = 4
+
+# Special 5x7 font, with a single character (space) that fills a 4x6 rectangle.
 # Used to make bar graphs for CPU and RAM usage.
-BAR_ELEMENT = [0x00, 0x7E, 0x7E, 0x7E, 0x00]
+BAR_5X7 = {
+  width: 5,
+  height: 7,
+  characters: [
+    [0x00, 0x7E, 0x7E, 0x7E, 0x00] # space
+  ]
+}
 
 board = Denko::PiBoard.new
 # Use the first hardware I2C interface.
@@ -22,6 +32,7 @@ i2c       = Denko::I2C::Bus.new(board: board, index: i2c_index)
 
 oled = Denko::Display::SSD1306.new(bus: i2c, rotate: true)
 canvas = oled.canvas
+
 
 # Helper to convert free output to nearest integer in MiB units.
 def ram_integer_from_string(string)
@@ -43,26 +54,32 @@ loop do
   cpu_percent = mpstat_result.chop.to_f
 
   canvas.clear
-  canvas.text_cursor = [0, 16]
-  canvas.print "CPU Usage:  #{('%.3f' % cpu_percent).rjust(8, ' ')}%"
+  
+  canvas.text_cursor = [0, 23]
+  canvas.font = :bmp_5x7
+  canvas.text "CPU Usage:  #{('%.3f' % cpu_percent).rjust(8, ' ')}%"
 
-  canvas.text_cursor = [0, 24]
-  (cpu_percent / 4).ceil.times { canvas.raw_char(BAR_ELEMENT) }
+  canvas.text_cursor = [0, 31]
+  canvas.font = BAR_5X7
+  canvas.text(" " * (cpu_percent / CORE_COUNT).ceil)
 
   # RAM Usage
   ram_string = `free -h | awk 'NR==2 {print $3}'`
   ram_usage = ram_string.to_i
 
-  canvas.text_cursor = [0, 40]
+  canvas.text_cursor = [0, 47]
+  canvas.font = :bmp_5x7
   ram_string = "#{ram_usage}/#{total_ram}M"
-  canvas.print "RAM Usage:#{ram_string.rjust(11, ' ')}"
+  canvas.text "RAM Usage:#{ram_string.rjust(11, ' ')}"
 
-  canvas.text_cursor = [0, 48]
-  (ram_usage / ram_bar_factor).ceil.times { canvas.raw_char(BAR_ELEMENT) }
-
+  canvas.text_cursor = [0, 56]
+  canvas.font = BAR_5X7
+  canvas.text(" " * (ram_usage / ram_bar_factor).ceil)
+  
   # Date and time just before write.
-  canvas.text_cursor = [0,0]
-  canvas.print(Time.now.strftime('%a %b %d %-l:%M %p'))
+  canvas.text_cursor = [0,7]
+  canvas.font = :bmp_5x7
+  canvas.text(Time.now.strftime('%a %b %d %-l:%M %p'))
 
   # Only refresh the area in use.
   oled.draw(0, 127, 0, 56)
