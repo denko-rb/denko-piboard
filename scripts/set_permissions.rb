@@ -68,14 +68,14 @@ def setup_spi
   end
 end
 
-def setup_pwm
 # Change PWM ownership and permissions
+def setup_pwm
   pwms = $map["pwms"]
-  unless pwms.empty?
-    group_setup(PWM_GROUP_NAME)
-    print "Exported and set permissions for: /sys/class/pwm/{"
-  end
-
+  return if pwms.empty?
+  
+  group_setup(PWM_GROUP_NAME)
+  print "Exported and set permissions for: /sys/class/pwm/{"
+  
   i = 0
   pwms.each_value do |hash|
     i += 1
